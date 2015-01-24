@@ -12,7 +12,7 @@ description = [[This is a combination of http-wordpress-plugins.nse and http-wor
         Feel free to criticize as this is my first patch. 
         ]]
 
--- usage nmap --script=http-wordpress-combined --script-args http-wordpress-combined.root="/blog/",http-wordpress-combined.search=500,http-wordpress-combined.type=0 <target> -d
+-- usage nmap --script=http-wordpress-combined --script-args http-wordpress-combined.root="/blog/",http-wordpress-combined.search=50,http-wordpress-combined.type=0 <target> -d
 
 author = "Gyanendra Mishra <anomaly.the@gmail.com>"
 
@@ -50,14 +50,15 @@ local types = {}
 local file = {}
 if operation_type_arg == 0 then
   wp_both["wp-themes.lst"] = wp_themes_file 
-  types = {'themes'}
+  types["themes"] = 0
 elseif operation_type_arg==1 then
   wp_both["wp-plugins.lst"] = wp_plugins_file
-  types = {'plugins'}
+  types["plugins"]= 0
 else
   wp_both["wp-plugins.lst"] = wp_plugins_file
   wp_both["wp-themes.lst"] = wp_themes_file
-  types = {'themes' , 'plugins'}
+  types["plugins"]=0
+  types["themes"]=0
 end       
   for key,value in pairs(wp_both) do    
     if not value then
@@ -108,7 +109,7 @@ end
 
 
   --build a table of both directories to brute force and the corresponding WP plugins' name
-  for key in types do
+  for key,value in pairs(types) do
   local l_file  
   if key == 'plugins' then
       l_file=file['wp-plugins.lst']
