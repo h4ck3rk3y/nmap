@@ -42,11 +42,11 @@ action = function(host, port)
   local bfqueries = {}
 
   --Check if the wp plugins list exists
-local operation_type_arg = tonumber(stdnse.get_script_args("http-wordpress-combo.type"))
+local operation_type_arg = tonumber(stdnse.get_script_args("http-wordpress-combined.type"))
 local wp_themes_file = nmap.fetchfile("nselib/data/wp-themes.lst")
 local wp_plugins_file = nmap.fetchfile("nselib/data/wp-plugins.lst")
 local wp_both = {}
-local typess = {}
+local types = {}
 local file = {}
 if operation_type_arg == 0 then
   wp_both["wp-themes.lst"] = wp_themes_file 
@@ -71,9 +71,9 @@ end
   end   
 
   local wp_autoroot
-  local wp_root = stdnse.get_script_args("http-wordpress-combo.root")
+  local wp_root = stdnse.get_script_args("http-wordpress-combined.root")
   local combo_search = DEFAULT_SEARCH_LIMIT
-  local combo_search_arg = stdnse.get_script_args("http-wordpress-combo.search")
+  local combo_search_arg = stdnse.get_script_args("http-wordpress-combined.search")
 
   if combo_search_arg == "all" then
     combo_search = nil
