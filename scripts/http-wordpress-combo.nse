@@ -14,7 +14,7 @@ description = [[This is a combination of http-wordpress-plugins.nse and http-wor
 -- @args http-wordpress-combo.root If set, points to the blog root directory on the website. If not, the script will try to find a WP directory installation or fall back to root.
 -- @args http-wordpress-combo.search As the plugins list contains tens of thousand of plugins, this script will only search the 100 most popular ones by default.
 -- Use this option with a number or "all" as an argument for a more comprehensive brute force.
--- @args http-wordpress-combo.type to tell what needs to be searched 0 for themes 1 for plugins 2 for both
+-- @args http-wordpress-combo.type to tell what needs to be searched 0 for themes 1.Defaults to both.
 --
 -- @usage 
 --nmap --script=http-wordpress-combo --script-args http-wordpress-combo.root="/blog/",http-wordpress-combo.search=50,http-wordpress-combo.type=2 <target>
@@ -51,6 +51,18 @@ local function read_data_file(file)
     end
   end)
 end
+local function existence_check_assign(act_file)
+  if not act_file then
+    return false
+  end
+  local temp_file = io.open(act_file,"r")
+  if not temp_file then
+    return false
+  end  
+  return temp_file   
+ end 
+
+
 
 action = function(host, port)
 
@@ -62,32 +74,31 @@ action = function(host, port)
 local operation_type_arg = tonumber(stdnse.get_script_args("http-wordpress-combo.type"))
 local wp_themes_file = nmap.fetchfile("nselib/data/wp-themes.lst")
 local wp_plugins_file = nmap.fetchfile("nselib/data/wp-plugins.lst")
-local wp_both = {}
-local types = {}
 local file = {}
-if operation_type_arg == 0 then
-  wp_both["wp-themes.lst"] = wp_themes_file 
-  types["themes"] = 0
+if operation_type_arg == 0 then 
+  if not  existence_check_assign(wp_themes_file) then
+    return false, "Couldn't find wp-themes.lst (should be in nselib/data)"
+  else
+    file['themes'] = existence_check_assign(wp_themes_file)
+  end    
 elseif operation_type_arg==1 then
-  wp_both["wp-plugins.lst"] = wp_plugins_file
-  types["plugins"]= 0
+  if not  existence_check_assign(wp_plugins_file) then
+    return  false, "Couldn't find wp-plugins.lst (should be in nselib/data)"
+  else
+    file['plugins'] = existence_check_assign(wp_plugins_file)
+  end  
 else
-  wp_both["wp-plugins.lst"] = wp_plugins_file
-  wp_both["wp-themes.lst"] = wp_themes_file
-  types["plugins"]=0
-  types["themes"]=0
-end       
-  for key,value in pairs(wp_both) do    
-    if not value then
-      return false, string.gsub("Couldn't find file (should be in nselib/data)","file",key)
-    end
-
-    file[key] = io.open(value, "r")
-    if not value then
-      return false,  string.gsub("Couldn't find file (should be in nselib/data)","file",key)
-    end
-  end   
-
+  if not  existence_check_assign(wp_themes_file) then
+    return  false, "Couldn't find wp-themes.lst (should be in nselib/data)"
+  else
+    file['themes'] = existence_check_assign(wp_themes_file)
+  end
+  if not  existence_check_assign(wp_plugins_file) then
+    return  false, "Couldn't find wp-plugins.lst (should be in nselib/data)"
+  else
+    file['plugins'] = existence_check_assign(wp_plugins_file)
+  end  
+end         
   local wp_autoroot
   local wp_root = stdnse.get_script_args("http-wordpress-combo.root")
   local combo_search = DEFAULT_SEARCH_LIMIT
@@ -127,13 +138,8 @@ end
 
   --build a table of both directories to brute force and the corresponding WP plugins' or themes' name
   local combo_count=0
-  for key,value in pairs(types) do
-  local l_file  
-  if key == 'plugins' then
-      l_file=file['wp-plugins.lst']
-  elseif key=='themes' then
-      l_file=file['wp-themes.lst']
-  end            
+  for key,value in pairs(file) do
+  local l_file = value
   combo_count = 0
   for line in read_data_file(l_file) do
     if combo_search and combo_count >= combo_search then
