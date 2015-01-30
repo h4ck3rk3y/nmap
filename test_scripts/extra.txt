@@ -1,0 +1,1 @@
+  and (build == "" or windows[i]['build']==tostring(build)) and (typeof=="" or windows[i]['typeof'] == tostring(typeof)) 
