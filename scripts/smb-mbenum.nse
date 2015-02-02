@@ -52,7 +52,7 @@ Queries information managed by the Windows Master Browser.
 --
 -- @args smb-mbenum.domain (optional) if not specified, lists the domain of the queried browser
 --
-
+-- @args smb-mbenum.name   (optional) if set 1  then will  show the winndows name for a particular device only once.
 --
 -- Version 0.1
 -- Created 06/11/2011 - v0.1 - created by Patrik Karlsson <patrik@cqure.net>
@@ -64,7 +64,7 @@ categories = {"discovery", "safe"}
 
 hostrule = function(host) return smb.get_port(host) ~= nil end
 
-local function log(msg) stdnse.debug3("%s", msg) end
+local function log(msg) stdnse.print_debug(3, msg) end
 
 ServerTypes = {
   SV_TYPE_WORKSTATION = 0x00000001,
@@ -133,7 +133,16 @@ OutputFormat = {
 
 
 action = function(host, port)
-
+  local nmap_file = nmap.fetchfile("nselib/data/microsoft-version-table.lua")
+  if not nmap_file then
+    return false,"couldn't find windows.lua shoud be in /nselib/data should be in nselib/data"  
+  end  
+  local file = loadfile(nmap_file)
+  if not file then 
+    return false,"couldn't open microsoft-version-table.lua"
+  end  
+  file()
+  stdnse.print_debug(1,"microsoft-version-table.lua loaded")
   local status, smbstate = smb.start(host)
   local err, entries
   local path = ("\\\\%s\\IPC$"):format(host.ip)
@@ -141,7 +150,7 @@ action = function(host, port)
   local format = stdnse.get_script_args("smb-mbenum.format") or OutputFormat.BY_TYPE_V_DETAILED
   local filter = stdnse.get_script_args("smb-mbenum.filter") or ServerTypes.SV_TYPE_ALL
   local domain = stdnse.get_script_args("smb-mbenum.domain")
-
+  local name_for_all = tonumber(stdnse.get_script_args("smb-mbenum.name")) or 0
   filter = tonumber(filter) or ServerTypes[filter]
   format = tonumber(format)
 
@@ -213,7 +222,8 @@ action = function(host, port)
       end
     end
   end
-
+  local windows_name_list = {}
+  local processed_list = {}
   if ( format == OutputFormat.BY_TYPE_H ) then
     for k, v in pairs(results) do
       local row = ("%s: %s"):format( k, stdnse.strjoin(",", v) )
@@ -235,13 +245,22 @@ action = function(host, port)
           cat_tab,
           server.name,
           ("%d.%d"):format(server.version.major,server.version.minor),
-          server.comment
-        )
-      end
+          server.comment)	
+        windows_name_list = get_windows_name(server.version.major,server.version.minor)      
+	if name_for_all ~= 1 or (name_for_all == 1  and not(already_processed(server,processed_list))) then
+	   if #windows_name_list > 0 then
+		tab.addrow(cat_tab,' Possibly one of')
+	   end
+	   for _,name in ipairs(windows_name_list) do
+	        name = '  |  ' .. name	
+	        tab.addrow(cat_tab,name)
+	   end
+	   table.insert(processed_list,server)
+	end	
+	end
       table.insert(output, { name = k, tab.dump(cat_tab) } )
     end
     table.sort(output, function(a,b) return a.name < b.name end)
   end
-
   return stdnse.format_output(true, output)
 end
