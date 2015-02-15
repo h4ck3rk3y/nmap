@@ -1,4 +1,3 @@
-
 local httpspider = require "httpspider"
 local shortport = require "shortport"
 local stdnse = require "stdnse"
@@ -13,8 +12,8 @@ discovered.
 ---
 -- @usage
 -- nmap -p 80 www.example.com --script http-grep --script-args='http-grep.match="[A-Za-z0-9%.%%%+%-]+@[A-Za-z0-9%.%%%+%-]+%.%w%w%w?%w?",http-grep.breakonmatch'
---
--- @output
+-- nmap --script http-grep --script-args='http-grep.builtins="email,phone"' <target>
+-- @output needs to be updated
 -- PORT   STATE SERVICE REASON
 -- 80/tcp open  http    syn-ack
 -- | http-grep:
@@ -44,6 +43,7 @@ discovered.
 --       not be used in combination. (default: false)
 -- @args http-grep.builtins supply a single or a list of built in types
 -- @args http-grep.delimiter supply a delimiter or use ',' by default appliest to both type and patterns
+-- @args http-grep.unique to show a particular match just once. default false.
 author = "Patrik Karlsson"
 license = "Same as Nmap--See http://nmap.org/book/man-legal.html"
 categories = {"discovery", "safe"}
@@ -61,11 +61,33 @@ local function shortenMatch(match)
   end
 end
 
+local function already_present(shortenMatch,mini_match,results)
+  shortenMatch = "+ " .. shortenMatch 
+  -- maybe it's in the current mini_match table??
+  for _,match in pairs(mini_match) do
+    if match == shortenMatch then
+      return true
+    end
+  end
+  -- maybe it's in the bigger results table??
+  for _,matches in pairs(results) do
+   for _,mini_match in pairs(matches) do
+    if type(mini_match)== "table" then 
+      for _,match in pairs(mini_match) do
+        if match == shortenMatch then
+          return true
+        end
+      end
+    end  
+  end
+  end 
+  return false
+end        
 action = function(host, port)
   -- a set of famous/most searched patterns
   local BUILT_IN_PATTERNS = {
   ['email'] = {'[A-Za-z0-9%.%%%+%-]+@[A-Za-z0-9%.%%%+%-]+%.%w%w%w?%w?',},
-  ['phone'] = {'%d%d%d%-%d%d%d%d','%(%d%d%d%)%s%d%d%d%-%d%d%d','%+%-%d%d%d%-%d%d%d%-%d%d%d%d','%d%d%d%-%d%d%d%-%d%d%d%d'},
+  ['phone'] = {'>?%d%d%d%-%d%d%d%d<?','%(%d%d%d%)%s%d%d%d%-%d%d%d','%+%-%d%d%d%-%d%d%d%-%d%d%d%d','%d%d%d%-%d%d%d%-%d%d%d%d'},
   ['mastercard']= {'5%d%d%d%s?%-?%d%d%d%d%s?%-?%d%d%d%d%s?%-?%d%d%d%d',},
   ['visa'] = {'4%d%d%d%s?%-?%d%d%d%d%s?%-?%d%d%d%d%s?%-?%d%d%d%d',},
   ['discover']={'6011%s?%-?%d%d%d%d%s?%-?%d%d%d%d%s?%-?%d%d%d%d',},
@@ -79,6 +101,7 @@ action = function(host, port)
   local break_on_match = stdnse.get_script_args("http-grep.breakonmatch")
   local delimiter = stdnse.get_script_args("http-grep.delimiter") or ','
   local builtins = stdnse.get_script_args("http-grep.builtins")
+  local unique = stdnse.get_script_args("http-grep.unique") or "false"
   local to_be_searched = {}
   if ( not(match) ) and (not(builtins)) then
     return stdnse.format_output(true, "ERROR: Argument http-grep.match was not set nor was builtin")
@@ -125,6 +148,7 @@ action = function(host, port)
     local mini_match = {}
     local count = 0
     local matches = {}
+    -- search for multiple patterns on a particular page and store the results in the mini_match table
     for _,pattern in pairs(to_be_searched) do
       mini_match = {}
       mini_match.name = "Results for Patttern " .. pattern .. " are: " 
@@ -134,7 +158,15 @@ action = function(host, port)
         count = count + select(2, body:gsub(pattern,""))
         
         for match in body:gmatch(pattern) do
-          table.insert(mini_match, "+ " .. shortenMatch(match))
+          if unique == "true" then
+            if not(already_present(shortenMatch(match),mini_match,results)) then
+            table.insert(mini_match,"+ " .. shortenMatch(match))
+            else
+            count = count - 1  
+            end
+          else
+            table.insert(mini_match,"+ " .. shortenMatch(match))          
+          end  
         end
         
         -- should we continue to search for matches?
@@ -143,13 +175,13 @@ action = function(host, port)
           break
         end
       end
+    -- all the pattern match results for a particular table are stored in the matches table  
     table.insert(matches,mini_match)
     end
+    --the matches table is given the name of the present url and is pushed into the results table
     matches.name = ("(%d) %s"):format(count,tostring(r.url))
     table.insert(results, matches)
   end
   table.sort(results, function(a,b) return a.name>b.name end)
   return stdnse.format_output(true, results)
 end
-
-
