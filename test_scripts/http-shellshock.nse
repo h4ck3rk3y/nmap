@@ -125,7 +125,7 @@ action = function(host, port)
   local rnd = nil
   for _,path in pairs(path_table) do
     stdnse.debug1("Checking path: %s", path) 
-    local req, rnd = generate_http_req(host, port, uri, http_header, nil)
+    local req, rnd = generate_http_req(host, port, path , http_header, nil)
     if req.status == 200 and string.match(req.body, rnd) ~= nil then
       local vuln_report = vulns.Report:new(SCRIPT_NAME, host, port)
       local vuln = {
@@ -148,7 +148,7 @@ action = function(host, port)
       stdnse.debug1("Random pattern '%s' was found in page. Host seems vulnerable.", rnd)
       vuln.state = vulns.STATE.EXPLOIT
       if cmd ~= nil then
-         req = generate_http_req(host, port, uri, http_header, cmd, nil)
+         req = generate_http_req(host, port, path, http_header, cmd, nil)
          vuln.exploit_results = req.body
       end
       return vuln_report:make_output(vuln)
