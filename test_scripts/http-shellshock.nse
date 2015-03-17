@@ -23,10 +23,6 @@ References:
 * http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2014-6271
 ]]
 
--- @args cmd - you can specify the custom command to use. [optional]
--- @args header - you can specify the header to use. [optional]
--- @args url - specify uri, uses '/' as default. [optional] 
--- @args invasive - picks paths from a list of popular paths. [optional]
 -- @usage 
 -- nmap -sV -p- --script http-shellshock <target>
 -- nmap -sV -p- --script http-shellshock --script-args uri=/cgi-bin/bin,cmd=ls <target>
@@ -75,6 +71,7 @@ References:
 -- @args http-shellshock.uri URI. Default: /
 -- @args http-shellshock.header HTTP header to use in requests. Default: User-Agent
 -- @args http-shellshock.cmd Custom command to send inside payload. Default: nil
+-- @args http-shellshock.invasive Picks paths from a list of popular paths.
 ---
 author = {"Paulino Calderon <calderon()websec.mx","Paul Amar <paul()sensepost com>"}
 license = "Same as Nmap--See http://nmap.org/book/man-legal.html"
