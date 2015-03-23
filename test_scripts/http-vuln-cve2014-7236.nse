@@ -53,7 +53,6 @@ action = function(host, port)
     risk_factor = "High",
     references = {
       'http://www.exploit-db.com/exploits/36438/',
-      'http://twiki.org/cgi-bin/view/Codev/SecurityAlert-CVE-2014-7236',
       'http://twiki.org/cgi-bin/view/Codev/SecurityAlert-CVE-2014-7236'
     },
     IDS = {
