@@ -5139,6 +5139,22 @@ table.insert(fingerprints, {
     category = 'management',
     probes = {
       {
+        path = '/lc/system/console',
+        method = 'HEAD'
+      },
+    },
+    matches = {
+      {
+        match = 'OSGi Management Console',
+        output = 'Adobe LiveCycle Management Console'
+      }
+    }
+  });
+
+table.insert(fingerprints, {
+    category = 'management',
+    probes = {
+      {
         path = '/dm-albums/dm-albums.php',
         method = 'HEAD'
       }
@@ -6522,6 +6538,9 @@ table.insert(fingerprints, {
       {
         path = '/_vti_txt/',
         method = 'GET'
+      },
+      {
+        path = '/postinfo.html'
       },
       {
         path = '/_vti_bin/_vti_aut/author.dll'

@@ -1,5 +1,40 @@
 # Nmap Changelog ($Id$); -*-text-*-
 
+o Handle a bunch of socket errors that can result from odd ICMP Type 3
+  Destination Unreachable messages received during service scanning. The crash
+  reported was "Unexpected error in NSE_TYPE_READ callback.  Error code: 92
+  (Protocol not available)" [Daniel Miller]
+
+o Fixed a crash (NULL pointer dereference) in PortList::isTCPwrapped when using
+  -sV and -O on an unknown service not listed in nmap-services. [Pierre Lalet]
+
+o Fixed a benign TOCTOU race between stat() and open() in mmapfile().
+  Reported by Camille Mougey. [Henri Doreau]
+
+o Reduce CPU consumption when using nsock poll engine with no registered FD,
+  by actually calling Poll() for the time until timeout, instead of directly
+  returning zero and entering the loop again. [Henri Doreau]
+
+o Fix ICMP Echo (-PE) host discovery for IPv6, broken since 6.45, caused by
+  failing to set the ICMP ID for outgoing packets which is used to match
+  incoming responses. [Andrew Waters]
+
+o Solve a crash on Windows 8.1 on Surface Pro 3 caused by WinPcap trying to
+  write an error message to a NULL pointer. [Peter Malecka]
+
+o Change the URI for the fingerprint submitter to its new location at
+  https://nmap.org/cgi-bin/submit.cgi
+
+o [Zenmap] Added new Hindi (hi) translation by Gyanendra Mishra.
+
+o [NSE] Added a new version of http-wordpress-enum, it now enumerates
+  plugins and themes of Wordpress installations. It also attempts to obtain
+  version information to detect outdated plugins. [Paulino Calderon]
+
+o [NSE] Renamed http-wordpress-enum to http-wordpress-users in favor of
+  the new version of the script http-wordpress-enum which enumerates
+  plugins and themes of Wordpress installations. [Paulino Calderon]
+
 o [NSE] Added a check for Cisco ASA version disclosure, CVE-2014-3398, to
   http-enum in the 'security' category [Daniel Miller]
 

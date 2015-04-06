@@ -20,6 +20,7 @@ PROTOCOLS = {
   ["TLSv1.1"]     = 0x0302,
   ["TLSv1.2"]     = 0x0303
 }
+HIGHEST_PROTOCOL = "TLSv1.2"
 
 --
 -- TLS Record Types
@@ -152,6 +153,24 @@ EC_POINT_FORMATS = {
 }
 
 ---
+-- RFC 5246 section 7.4.1.4.1. Signature Algorithms
+HashAlgorithms = {
+  none = 0,
+  md5 = 1,
+  sha1 = 2,
+  sha224 = 3,
+  sha256 = 4,
+  sha384 = 5,
+  sha512 = 6,
+}
+SignatureAlgorithms = {
+  anonymous = 0,
+  rsa = 1,
+  dsa = 2,
+  ecdsa = 3,
+}
+
+---
 -- Extensions
 -- RFC 6066, draft-agl-tls-nextprotoneg-03
 -- https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
@@ -211,6 +230,16 @@ EXTENSION_HELPERS = {
       list[#list+1] = bin.pack(">C", EC_POINT_FORMATS[format])
     end
     return bin.pack(">p", table.concat(list))
+  end,
+  ["signature_algorithms"] = function(signature_algorithms)
+    local list = {}
+    for _, pair in ipairs(signature_algorithms) do
+      list[#list+1] = bin.pack(">CC",
+        HashAlgorithms[pair[1]] or pair[1],
+        SignatureAlgorithms[pair[2]] or pair[2]
+        )
+    end
+    return bin.pack(">P", table.concat(list))
   end,
   ["next_protocol_negotiation"] = tostring,
 }
@@ -581,6 +610,14 @@ CIPHERS = {
 ["TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256"]      =  0xCC15,
 ["SSL_RSA_FIPS_WITH_DES_CBC_SHA"]                  =  0xFEFE,
 ["SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA"]             =  0xFEFF,
+}
+
+DEFAULT_CIPHERS = {
+  "TLS_RSA_WITH_AES_128_CBC_SHA", -- mandatory TLSv1.2
+  "TLS_RSA_WITH_3DES_EDE_CBC_SHA", -- mandatory TLSv1.1
+  "TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", -- mandatory TLSv1.0
+  "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", -- DHE with strong AES
+  "TLS_RSA_WITH_RC4_128_MD5", -- Weak and old, but likely supported on old stuff
 }
 
 local function find_key(t, value)
@@ -1097,7 +1134,7 @@ function record_read(buffer, i)
   h["type"] = name
   name = find_key(PROTOCOLS, proto)
   if name == nil then
-    stdnse.debug1("Unknown TLS Protocol: 0x%x", typ)
+    stdnse.debug1("Unknown TLS Protocol: 0x%04x", proto)
     return j, nil
   end
   h["protocol"] = name
@@ -1220,6 +1257,24 @@ function record_write(type, protocol, b)
   })
 end
 
+-- Claim to support every hash and signature algorithm combination (TLSv1.2 only)
+--
+local signature_algorithms_all
+do
+  local sigalgs = {}
+  for hash, _ in pairs(HashAlgorithms) do
+    for sig, _ in pairs(SignatureAlgorithms) do
+      -- RFC 5246 7.4.1.4.1.
+      -- The "anonymous" value is meaningless in this context but used in
+      -- Section 7.4.3.  It MUST NOT appear in this extension.
+      if sig ~= "anonymous" then
+        sigalgs[#sigalgs+1] = {hash, sig}
+      end
+    end
+  end
+  signature_algorithms_all = EXTENSION_HELPERS["signature_algorithms"](sigalgs)
+end
+
 ---
 -- Build a client_hello message
 --
@@ -1232,6 +1287,7 @@ end
 -- @return The client_hello record as a string
 function client_hello(t)
   local b, ciphers, compressor, compressors, h, len
+  t = t or {}
 
   ----------
   -- Body --
@@ -1239,7 +1295,8 @@ function client_hello(t)
 
   b = {}
   -- Set the protocol.
-  table.insert(b, bin.pack(">S", PROTOCOLS[t["protocol"]]))
+  local protocol = t["protocol"] or HIGHEST_PROTOCOL
+  table.insert(b, bin.pack(">S", PROTOCOLS[protocol]))
 
   -- Set the random data.
   table.insert(b, bin.pack(">I", os.time()))
@@ -1248,25 +1305,20 @@ function client_hello(t)
   table.insert(b, stdnse.generate_random_string(28))
 
   -- Set the session ID.
-  table.insert(b, bin.pack("C", 0))
+  table.insert(b, '\0')
 
   -- Cipher suites.
   ciphers = {}
-  if t["ciphers"] ~= nil then
-    -- Add specified ciphers.
-    for _, cipher in pairs(t["ciphers"]) do
-      if type(cipher) == "string" then
-        cipher = CIPHERS[cipher] or SCSVS[cipher]
-      end
-      if type(cipher) == "number" and cipher >= 0 and cipher <= 0xffff then
-        table.insert(ciphers, bin.pack(">S", cipher))
-      else
-        stdnse.debug1("Unknown cipher in client_hello: %s", cipher)
-      end
+  -- Add specified ciphers.
+  for _, cipher in pairs(t["ciphers"] or DEFAULT_CIPHERS) do
+    if type(cipher) == "string" then
+      cipher = CIPHERS[cipher] or SCSVS[cipher]
     end
-  else
-    -- Use NULL cipher
-    table.insert(ciphers, bin.pack(">S", CIPHERS["TLS_NULL_WITH_NULL_NULL"]))
+    if type(cipher) == "number" and cipher >= 0 and cipher <= 0xffff then
+      table.insert(ciphers, bin.pack(">S", cipher))
+    else
+      stdnse.debug1("Unknown cipher in client_hello: %s", cipher)
+    end
   end
   table.insert(b, bin.pack(">P", table.concat(ciphers)))
 
@@ -1285,18 +1337,26 @@ function client_hello(t)
   table.insert(b, bin.pack(">p", table.concat(compressors)))
 
   -- TLS extensions
-  if PROTOCOLS[t["protocol"]] and
-      PROTOCOLS[t["protocol"]] ~= PROTOCOLS["SSLv3"] then
+  if PROTOCOLS[protocol] and protocol ~= "SSLv3" then
     local extensions = {}
     if t["extensions"] ~= nil then
+      -- Do we need to add the signature_algorithms extension?
+      local need_sigalg = (protocol == "TLSv1.2")
       -- Add specified extensions.
       for extension, data in pairs(t["extensions"]) do
         if type(extension) == "number" then
           table.insert(extensions, bin.pack(">S", extension))
         else
+          if extension == "signature_algorithms" then
+            need_sigalg = false
+          end
           table.insert(extensions, bin.pack(">S", EXTENSIONS[extension]))
         end
         table.insert(extensions, bin.pack(">P", data))
+      end
+      if need_sigalg then
+        table.insert(extensions, bin.pack(">S", EXTENSIONS["signature_algorithms"]))
+        table.insert(extensions, bin.pack(">P", signature_algorithms_all))
       end
     end
     -- Extensions are optional
@@ -1323,7 +1383,8 @@ function client_hello(t)
 
   table.insert(h, b)
 
-  return record_write("handshake", t["protocol"], table.concat(h))
+  -- Record layer version should be SSLv3 (lowest compatible record version)
+  return record_write("handshake", "SSLv3", table.concat(h))
 end
 
 local function read_atleast(s, n)

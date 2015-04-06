@@ -2808,7 +2808,7 @@ dlsrpn	2065/tcp	0.000815	# Data Link Switch Read Port Number
 dlsrpn	2065/udp	0.000511	# Data Link Switch Read Port Number
 dlswpn	2067/tcp	0.000113	# Data Link Switch Write Port Number
 dlswpn	2067/udp	0.001005	# Data Link Switch Write Port Number
-advocentkvm	2068/tcp	0.000201	# Advocent KVM Server
+avocentkvm	2068/tcp	0.000201	# Avocent KVM Server
 event-port	2069/tcp	0.000076	# HTTP Event Port
 ah-esp-encap	2070/tcp	0.000076	# AH and ESP Encapsulated in UDP packet
 ah-esp-encap	2070/udp	0.000330	# AH and ESP Encapsulated in UDP packet
@@ -19789,6 +19789,7 @@ unknown	64729/udp	0.000502
 unknown	64731/udp	0.000502
 unknown	64735/udp	0.000502
 unknown	64737/udp	0.000502
+murmur	64738/udp	0.000502	# Murmur is the server-side software for Mumble open source voice chat software
 unknown	64740/udp	0.000502
 unknown	64743/udp	0.000502
 unknown	64746/udp	0.000502
