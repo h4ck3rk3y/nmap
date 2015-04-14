@@ -278,7 +278,7 @@ action = function(host, port)
   end
 
   -- return a live notice from time to time
-  while (nmap.clock_ms() < end_time or script_vars.TimeLimit == nil) and not script_vars.StopAll 
+  while (nmap.clock_ms() < end_time or script_vars.TimeLimit == nil) and not script_vars.StopAll do
     if script_vars.ServerNotice ~= last_message then
       -- don't flood the output by repeating the same info
       stdnse.debug1("[MAIN THREAD]: " .. script_vars.ServerNotice)
