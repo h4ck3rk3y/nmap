@@ -236,7 +236,7 @@ end
 action = function(host, port)
   
   local script_vars= {
-    SendInterval
+    SendInterval,
     TimeLimit,
     -- this will save the amount of still connected threads
     ThreadCount = 0,
