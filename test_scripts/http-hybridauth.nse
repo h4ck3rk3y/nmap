@@ -112,9 +112,9 @@ action = function(host, port)
     end  
     stdnse.print_debug(1,"Version Detected : " .. tostring(version))
     if vulnVersion(tostring(version)) then
-        vuln_table.state = vulns.STATE.VULN
+      vuln_table.state = vulns.STATE.VULN
     else
-        return
+      return
     end
   end
 
@@ -140,7 +140,7 @@ action = function(host, port)
       vuln_table.state = vulns.STATE.EXPLOIT
     end  
   end
-  
+
   -- lets remove the backdoor
   path = '/'.. relpath .. '/install.php'
   path = path:gsub('/+','/')
