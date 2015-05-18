@@ -18,11 +18,35 @@ This script takes inspiration from the various metasploit modules listed here:
 
 ---
 -- @usage
--- nmap --script http-iis-webdav-vuln -p80,8080 <host>
+-- nmap --script http-webdav-test -p80,8080 <host>
 --
 -- @output
--- 80/tcp open  http    syn-ack
--- |_ http-iis-webdav-vuln: WebDAV is ENABLED. Vulnerable folders discovered: /secret, /webdav
+-- Scanned at 2015-05-18 23:49:16 IST for 0s
+-- PORT     STATE SERVICE REASON
+-- 8008/tcp open  http    syn-ack
+-- | http-webdav-test: 
+-- |   Server Type
+-- |     DAV/0.9.8 Python/2.7.6
+-- |   WebDav Type
+-- |     unkown
+-- |   Allowed Methods
+-- |     GET, HEAD, COPY, MOVE, POST, PUT, PROPFIND, PROPPATCH, OPTIONS, MKCOL, DELETE, TRACE, REPORT
+-- |   Uploadable Files
+-- |     html
+-- |     cfm
+-- |     jhtml
+-- |     cgi
+-- |     aspx
+-- |     jsp
+-- |     shtml
+-- |     pl
+-- |     txt
+-- |     asp
+-- |     php
+-- |   Executable Files
+-- |     html
+-- |_    txt
+-- Final times for host: srtt: 69 rttvar: 3760  to: 100000
 --
 -- @args folder The folder to start in; eg, <code>"/web"</code> will try <code>"/web/xxx"</code>.
 -----------------------------------------------------------------------
