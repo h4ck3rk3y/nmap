@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -127,6 +127,7 @@
 #include "osscan.h"
 #include "osscan2.h"
 #include "scan_engine.h"
+#include "FPEngine.h"
 #include "idle_scan.h"
 #include "timing.h"
 #include "NmapOps.h"
@@ -139,6 +140,7 @@
 #include "protocols.h"
 #include "targets.h"
 #include "TargetGroup.h"
+#include "Target.h"
 #include "service_scan.h"
 #include "charpool.h"
 #include "nmap_error.h"
@@ -147,6 +149,16 @@
 
 #ifndef NOLUA
 #include "nse_main.h"
+#endif
+
+#ifdef HAVE_SIGNAL
+#include <signal.h>
+#endif
+
+#include <fcntl.h>
+
+#ifdef HAVE_PWD_H
+#include <pwd.h>
 #endif
 
 #ifdef WIN32
@@ -339,7 +351,7 @@ static void printusage(int rc) {
          "  nmap -v -A scanme.nmap.org\n"
          "  nmap -v -sn 192.168.0.0/16 10.0.0.0/8\n"
          "  nmap -v -iR 10000 -Pn -p 80\n"
-         "SEE THE MAN PAGE (http://nmap.org/book/man.html) FOR MORE OPTIONS AND EXAMPLES\n", NMAP_NAME, NMAP_VERSION, NMAP_URL);
+         "SEE THE MAN PAGE (https://nmap.org/book/man.html) FOR MORE OPTIONS AND EXAMPLES\n", NMAP_NAME, NMAP_VERSION, NMAP_URL);
   exit(rc);
 }
 
@@ -1426,8 +1438,10 @@ void  apply_delayed_options() {
 
 
   if (o.osscan) {
-    o.reference_FPs = parse_fingerprint_reference_file("nmap-os-db");
-    o.os_labels_ipv6 = load_fp_matches();
+    if (o.af() == AF_INET)
+        o.reference_FPs = parse_fingerprint_reference_file("nmap-os-db");
+    else if (o.af() == AF_INET6)
+        o.os_labels_ipv6 = load_fp_matches();
   }
 
   // Must check and change this before validate_scan_lists
@@ -2784,63 +2798,6 @@ void free_scan_lists(struct scan_lists *ports) {
     free(ports->udp_ping_ports);
   if (ports->proto_ping_ports)
     free(ports->proto_ping_ports);
-}
-
-char *seqreport(struct seq_info *seq) {
-  static char report[512];
-
-  Snprintf(report, sizeof(report), "TCP Sequence Prediction: Difficulty=%d (%s)\n", seq->index, seqidx2difficultystr(seq->index));
-  return report;
-}
-
-/* Convert a TCP sequence prediction difficulty index like 1264386
-   into a difficulty string like "Worthy Challenge */
-const char *seqidx2difficultystr(unsigned long idx) {
-  return  (idx < 3) ? "Trivial joke" : (idx < 6) ? "Easy" : (idx < 11) ? "Medium" : (idx < 12) ? "Formidable" : (idx < 16) ? "Worthy challenge" : "Good luck!";
-}
-
-const char *ipidclass2ascii(int seqclass) {
-  switch (seqclass) {
-  case IPID_SEQ_CONSTANT:
-    return "Duplicated ipid (!)";
-  case IPID_SEQ_INCR:
-    return "Incremental";
-  case IPID_SEQ_INCR_BY_2:
-    return "Incrementing by 2";
-  case IPID_SEQ_BROKEN_INCR:
-    return "Broken little-endian incremental";
-  case IPID_SEQ_RD:
-    return "Randomized";
-  case IPID_SEQ_RPI:
-    return "Random positive increments";
-  case IPID_SEQ_ZERO:
-    return "All zeros";
-  case IPID_SEQ_UNKNOWN:
-    return "Busy server or unknown class";
-  default:
-    return "ERROR, WTF?";
-  }
-}
-
-const char *tsseqclass2ascii(int seqclass) {
-  switch (seqclass) {
-  case TS_SEQ_ZERO:
-    return "zero timestamp";
-  case TS_SEQ_2HZ:
-    return "2HZ";
-  case TS_SEQ_100HZ:
-    return "100HZ";
-  case TS_SEQ_1000HZ:
-    return "1000HZ";
-  case TS_SEQ_OTHER_NUM:
-    return "other";
-  case TS_SEQ_UNSUPPORTED:
-    return "none returned (unsupported)";
-  case TS_SEQ_UNKNOWN:
-    return "unknown class";
-  default:
-    return "ERROR, WTF?";
-  }
 }
 
 

@@ -4,7 +4,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -125,45 +125,13 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <errno.h>
-#include <ctype.h>
-#include "nmap.h"
-#ifdef WIN32
-#include "mswin32\winclude.h"
-#else
-#include <sys/types.h>
-
-#if HAVE_NETINET_IN_H
-#include <netinet/in.h>
-#endif
-
+#ifndef WIN32
 #include <sys/mman.h>
-#include "nmap_config.h"
-#endif
-
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
 #endif
 
 #include "nbase.h"
 
 #include "nmap_error.h"
-#include "global_structures.h"
 
 /* Arithmatic difference modulo 2^32 */
 #ifndef MOD_DIFF

@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -125,6 +125,7 @@
 
 #include "nmap_error.h"
 #include "NmapOps.h"
+#include "Target.h"
 #include "payload.h"
 #include "scan_engine_raw.h"
 #include "struct_ip.h"
@@ -651,7 +652,9 @@ int get_ping_pcap_result(UltraScanInfo *USI, struct timeval *stime) {
           if (probe->protocol() != encaps_hdr.proto ||
               sockaddr_storage_cmp(&target_src, &hdr.dst) != 0 ||
               sockaddr_storage_cmp(&target_src, &encaps_hdr.src) != 0 ||
-              sockaddr_storage_cmp(&target_dst, &encaps_hdr.dst) != 0)
+              sockaddr_storage_cmp(&target_dst, &encaps_hdr.dst) != 0 ||
+              ((probe->protocol() == IPPROTO_ICMP || probe->protocol() == IPPROTO_ICMPV6) &&
+               ntohs(ping->id) != probe->icmpid()))
             continue;
 
           if ((encaps_hdr.proto == IPPROTO_ICMP || encaps_hdr.proto == IPPROTO_ICMPV6)
@@ -1304,8 +1307,8 @@ UltraProbe *sendIPScanProbe(UltraScanInfo *USI, HostScanStats *hss,
       seq = seq32_encode(USI, tryno, pingseq);
 
     if (pspec->pd.tcp.flags & TH_SYN) {
-      tcpops = (u8 *) "\x02\x04\x05\xb4";
-      tcpopslen = 4;
+      tcpops = (u8 *) TCP_SYN_PROBE_OPTIONS;
+      tcpopslen = TCP_SYN_PROBE_OPTIONS_LEN;
     }
 
     if (hss->target->af() == AF_INET) {

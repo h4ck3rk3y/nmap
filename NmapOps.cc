@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -125,8 +125,9 @@
 #include "nmap.h"
 #include "nbase.h"
 #include "NmapOps.h"
+#include "osscan.h"
 #include "services.h"
-#include "utils.h"
+#include "nmap_error.h"
 #ifdef WIN32
 #include "winfix.h"
 #endif
@@ -570,11 +571,11 @@ dialog where you can start NPF if you have administrator privileges.";
   }
 
   if (af() == AF_INET6 && (generate_random_ips|numdecoys|bouncescan|fragscan)) {
-    fatal("Sorry -- IPv6 support is currently only available for TCP, UDP, and SCTP port scans and list scan (-sL).  OS detection, random targets and decoys are also not supported with IPv6.  Further support is under consideration.");
+    fatal("Random targets, decoys, FTP bounce scan, and fragmentation are not supported with IPv6.");
   }
 
   if(ipoptions && osscan)
-    error("WARNING: Ip options are NOT used while OS scanning!");
+    error("WARNING: IP options are NOT used while OS scanning!");
 
 #ifndef NOLUA
   /* Make sure nmap.registry.args is available (even if it's empty) */

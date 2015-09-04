@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -127,8 +127,8 @@
 #ifndef TARGET_H
 #define TARGET_H
 
-#include "nmap.h"
-#include "FingerPrintResults.h"
+#include "nbase.h"
+
 #include "libnetutil/netutil.h"
 
 #ifndef NOLUA
@@ -137,8 +137,10 @@
 
 #include "portreasons.h"
 #include "portlist.h"
-#include "tcpip.h"
 #include "scan_engine.h"
+#include "osscan.h"
+#include "osscan2.h"
+class FingerPrintResults;
 
 #include <list>
 #include <string>
@@ -149,16 +151,6 @@
 
 enum osscan_flags {
         OS_NOTPERF=0, OS_PERF, OS_PERF_UNREL
-};
-
-/* The method used to calculate the Target::distance, included in OS
-   fingerprints. */
-enum dist_calc_method {
-        DIST_METHOD_NONE,
-        DIST_METHOD_LOCALHOST,
-        DIST_METHOD_DIRECT,
-        DIST_METHOD_ICMP,
-        DIST_METHOD_TRACEROUTE
 };
 
 struct host_timeout_nfo {

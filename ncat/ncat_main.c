@@ -3,7 +3,7 @@
  * to mode-specific functions.                                             *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -372,20 +372,23 @@ int main(int argc, char *argv[])
             o.execmode = EXEC_PLAIN;
             break;
         case 'g': {
-            char *a = strtok(optarg, ",");
-            do {
+            char *from = optarg;
+            char *a = NULL;
+            while (o.numsrcrtes < 8 && (a = strtok(from, ",")))
+            {
                 union sockaddr_u addr;
                 size_t sslen;
                 int rc;
+                from = NULL;
 
                 rc = resolve(a, 0, &addr.storage, &sslen, AF_INET);
                 if (rc != 0) {
                     bye("Sorry, could not resolve source route hop \"%s\": %s.",
                     a, gai_strerror(rc));
                 }
-                o.srcrtes[o.numsrcrtes] = addr.in.sin_addr;
-            } while (++o.numsrcrtes < 8 && (a = strtok(NULL, ",")));
-            if (strtok(NULL, ","))
+                o.srcrtes[o.numsrcrtes++] = addr.in.sin_addr;
+            }
+            if (strtok(from, ","))
                 bye("Sorry, you gave too many source route hops.");
             break;
         }

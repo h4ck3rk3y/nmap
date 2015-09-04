@@ -10,12 +10,12 @@ local openssl = stdnse.silent_require "openssl"
 description = [[
 Tests for the CVE-2011-3368 (Reverse Proxy Bypass) vulnerability in Apache HTTP server's reverse proxy mode.
 The script will run 3 tests:
- o the loopback test, with 3 payloads to handle different rewrite rules
- o the internal hosts test. According to Contextis, we expect a delay before a server error.
- o The external website test. This does not mean that you can reach a LAN ip, but this is a relevant issue anyway.
+* the loopback test, with 3 payloads to handle different rewrite rules
+* the internal hosts test. According to Contextis, we expect a delay before a server error.
+* The external website test. This does not mean that you can reach a LAN ip, but this is a relevant issue anyway.
 
 References:
- * http://www.contextis.com/research/blog/reverseproxybypass/
+* http://www.contextis.com/research/blog/reverseproxybypass/
 ]]
 
 ---
@@ -85,7 +85,7 @@ servers to remote users who send carefully crafted requests.]],
   local bypass_request = http.pipeline_go(host,port, all)
   if ( not(bypass_request) ) then
     stdnse.debug1("got no answers from pipelined queries")
-    return "\n  ERROR: Got no answers from pipelined queries"
+    return stdnse.format_output(false, "Got no answers from pipelined queries")
   end
 
 

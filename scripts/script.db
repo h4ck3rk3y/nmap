@@ -131,6 +131,7 @@ Entry { filename = "hadoop-tasktracker-info.nse", categories = { "default", "dis
 Entry { filename = "hbase-master-info.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "hbase-region-info.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "hddtemp-info.nse", categories = { "default", "discovery", "safe", } }
+Entry { filename = "hnap-info.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "hostmap-bfk.nse", categories = { "discovery", "external", "intrusive", } }
 Entry { filename = "hostmap-ip2hosts.nse", categories = { "discovery", "external", } }
 Entry { filename = "hostmap-robtex.nse", categories = { "discovery", "external", "safe", } }
@@ -152,6 +153,7 @@ Entry { filename = "http-coldfusion-subzero.nse", categories = { "exploit", } }
 Entry { filename = "http-comments-displayer.nse", categories = { "discovery", "safe", } }
 Entry { filename = "http-config-backup.nse", categories = { "auth", "intrusive", } }
 Entry { filename = "http-cors.nse", categories = { "default", "discovery", "safe", } }
+Entry { filename = "http-cross-domain-policy.nse", categories = { "external", "safe", "vuln", } }
 Entry { filename = "http-csrf.nse", categories = { "exploit", "intrusive", "vuln", } }
 Entry { filename = "http-date.nse", categories = { "discovery", "safe", } }
 Entry { filename = "http-default-accounts.nse", categories = { "auth", "discovery", "intrusive", } }
@@ -160,13 +162,13 @@ Entry { filename = "http-dlink-backdoor.nse", categories = { "exploit", "vuln", 
 Entry { filename = "http-dombased-xss.nse", categories = { "exploit", "intrusive", "vuln", } }
 Entry { filename = "http-domino-enum-passwords.nse", categories = { "auth", "intrusive", } }
 Entry { filename = "http-drupal-enum-users.nse", categories = { "discovery", "intrusive", } }
-Entry { filename = "http-drupal-modules.nse", categories = { "discovery", "intrusive", } }
-Entry { filename = "http-email-harvest.nse", categories = { "discovery", "safe", } }
+Entry { filename = "http-drupal-enum.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "http-enum.nse", categories = { "discovery", "intrusive", "vuln", } }
 Entry { filename = "http-errors.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "http-exif-spider.nse", categories = { "intrusive", } }
 Entry { filename = "http-favicon.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "http-feed.nse", categories = { "discovery", "intrusive", } }
+Entry { filename = "http-fetch.nse", categories = { "safe", } }
 Entry { filename = "http-fileupload-exploiter.nse", categories = { "exploit", "intrusive", "vuln", } }
 Entry { filename = "http-form-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "http-form-fuzzer.nse", categories = { "fuzzer", "intrusive", } }
@@ -184,6 +186,7 @@ Entry { filename = "http-iis-short-name-brute.nse", categories = { "brute", "int
 Entry { filename = "http-iis-webdav-vuln.nse", categories = { "intrusive", "vuln", } }
 Entry { filename = "http-joomla-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "http-litespeed-sourcecode-download.nse", categories = { "exploit", "intrusive", "vuln", } }
+Entry { filename = "http-ls.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "http-majordomo2-dir-traversal.nse", categories = { "exploit", "intrusive", "vuln", } }
 Entry { filename = "http-malware-host.nse", categories = { "malware", "safe", } }
 Entry { filename = "http-method-tamper.nse", categories = { "auth", "vuln", } }
@@ -211,6 +214,8 @@ Entry { filename = "http-slowloris-check.nse", categories = { "safe", "vuln", } 
 Entry { filename = "http-slowloris.nse", categories = { "dos", "intrusive", } }
 Entry { filename = "http-sql-injection.nse", categories = { "intrusive", "vuln", } }
 Entry { filename = "http-stored-xss.nse", categories = { "exploit", "intrusive", "vuln", } }
+Entry { filename = "http-svn-enum.nse", categories = { "default", "discovery", "safe", } }
+Entry { filename = "http-svn-info.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "http-title.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "http-tplink-dir-traversal.nse", categories = { "exploit", "vuln", } }
 Entry { filename = "http-trace.nse", categories = { "discovery", "safe", "vuln", } }
@@ -235,9 +240,13 @@ Entry { filename = "http-vuln-cve2014-2126.nse", categories = { "safe", "vuln", 
 Entry { filename = "http-vuln-cve2014-2127.nse", categories = { "safe", "vuln", } }
 Entry { filename = "http-vuln-cve2014-2128.nse", categories = { "safe", "vuln", } }
 Entry { filename = "http-vuln-cve2014-2129.nse", categories = { "safe", "vuln", } }
+Entry { filename = "http-vuln-cve2015-1427.nse", categories = { "intrusive", "vuln", } }
+Entry { filename = "http-vuln-cve2015-1635.nse", categories = { "safe", "vuln", } }
+Entry { filename = "http-vuln-misfortune-cookie.nse", categories = { "intrusive", "vuln", } }
 Entry { filename = "http-vuln-wnr1000-creds.nse", categories = { "exploit", "intrusive", "vuln", } }
 Entry { filename = "http-waf-detect.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "http-waf-fingerprint.nse", categories = { "discovery", "intrusive", } }
+Entry { filename = "http-webdav-scan.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "http-wordpress-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "http-wordpress-enum.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "http-wordpress-users.nse", categories = { "auth", "intrusive", "vuln", } }
@@ -342,6 +351,7 @@ Entry { filename = "ntp-info.nse", categories = { "default", "discovery", "safe"
 Entry { filename = "ntp-monlist.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "omp2-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "omp2-enum-targets.nse", categories = { "discovery", "safe", } }
+Entry { filename = "omron-info.nse", categories = { "discovery", "version", } }
 Entry { filename = "openlookup-info.nse", categories = { "default", "discovery", "safe", "version", } }
 Entry { filename = "openvas-otp-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "oracle-brute-stealth.nse", categories = { "brute", "intrusive", } }
@@ -467,6 +477,7 @@ Entry { filename = "telnet-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "telnet-encryption.nse", categories = { "discovery", "safe", } }
 Entry { filename = "tftp-enum.nse", categories = { "discovery", "intrusive", } }
 Entry { filename = "tls-nextprotoneg.nse", categories = { "default", "discovery", "safe", } }
+Entry { filename = "tor-consensus-checker.nse", categories = { "external", "safe", } }
 Entry { filename = "traceroute-geolocation.nse", categories = { "discovery", "external", "safe", } }
 Entry { filename = "unittest.nse", categories = { "safe", } }
 Entry { filename = "unusual-port.nse", categories = { "safe", } }
@@ -486,5 +497,6 @@ Entry { filename = "whois-ip.nse", categories = { "discovery", "external", "safe
 Entry { filename = "wsdd-discover.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "x11-access.nse", categories = { "auth", "default", "safe", } }
 Entry { filename = "xdmcp-discover.nse", categories = { "discovery", "safe", } }
+Entry { filename = "xmlrpc-methods.nse", categories = { "default", "discovery", "safe", } }
 Entry { filename = "xmpp-brute.nse", categories = { "brute", "intrusive", } }
 Entry { filename = "xmpp-info.nse", categories = { "default", "discovery", "safe", "version", } }

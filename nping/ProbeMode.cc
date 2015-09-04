@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -152,19 +152,19 @@ int ProbeMode::init_nsock(){
   struct timeval now;
   if( nsock_init==false ){
       /* Create a new nsock pool */
-      if ((nsp = nsp_new(NULL)) == NULL)
+      if ((nsp = nsock_pool_new(NULL)) == NULL)
         nping_fatal(QT_3, "Failed to create new pool.  QUITTING.\n");
-      nsp_setdevice(nsp, o.getDevice());
+      nsock_pool_set_device(nsp, o.getDevice());
 
       /* Allow broadcast addresses */
-      nsp_setbroadcast(nsp, 1);
+      nsock_pool_set_broadcast(nsp, 1);
 
       /* Set nsock trace level */
       gettimeofday(&now, NULL);
       if( o.getDebugging() == DBG_5)
-        nsock_set_loglevel(nsp, NSOCK_LOG_INFO);
+        nsock_set_loglevel(NSOCK_LOG_INFO);
       else if( o.getDebugging() > DBG_5 )
-        nsock_set_loglevel(nsp, NSOCK_LOG_DBG_ALL);
+        nsock_set_loglevel(NSOCK_LOG_DBG_ALL);
       /* Flag it as already initialized so we don't do it again */
       nsock_init=true;
   }
@@ -175,7 +175,7 @@ int ProbeMode::init_nsock(){
 /** Cleans up the internal nsock pool and any other internal data that
   * needs to be taken care of before destroying the object. */
 int ProbeMode::cleanup(){
-  nsp_delete(this->nsp);
+  nsock_pool_delete(this->nsp);
   return OP_SUCCESS;
 } /* End of cleanup() */
 
@@ -367,7 +367,7 @@ int ProbeMode::start(){
     /* Set up libpcap */
     if(!o.disablePacketCapture()){
         /* Create new IOD for pcap */
-        if ((pcap_nsi = nsi_new(nsp, NULL)) == NULL)
+        if ((pcap_nsi = nsock_iod_new(nsp, NULL)) == NULL)
             nping_fatal(QT_3, "Failed to create new nsock_iod.  QUITTING.\n");
 
         /* Open pcap */
@@ -1691,7 +1691,7 @@ void ProbeMode::probe_nping_event_handler(nsock_pool nsp, nsock_event nse, void 
 
             /* If we are on a Ethernet network, extract the next packet protocol
              * from the Ethernet frame. */
-            if( nsi_pcap_linktype(nsi) == DLT_EN10MB ){
+            if( nsock_iod_linktype(nsi) == DLT_EN10MB ){
                 ethtype=(u16*)(link+12);
                 *ethtype=ntohs(*ethtype);
                 switch(*ethtype){
@@ -1945,7 +1945,9 @@ void ProbeMode::probe_tcpconnect_event_handler(nsock_pool nsp, nsock_event nse, 
         if( mypacket==NULL )
             nping_fatal(QT_3, "tcpconnect_event_handler(): NULL value supplied.");
         /* Determine which target are we dealing with */
-        nsi_getlastcommunicationinfo(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
+        nsock_iod_get_communication_info(nsi, NULL, &family, NULL,
+                                         (struct sockaddr*)&peer,
+                                         sizeof(struct sockaddr_storage) );
         if(family==AF_INET6){
             inet_ntop(AF_INET6, &peer6->sin6_addr, ipstring, sizeof(ipstring));
             peerport=ntohs(peer6->sin6_port);
@@ -2002,17 +2004,17 @@ void ProbeMode::probe_tcpconnect_event_handler(nsock_pool nsp, nsock_event nse, 
          * If we don't have a response by that time we probably aren't gonna
          * get any, so it shouldn't be a big problem. */
         if( packetno>(u32)max_iods ){
-            nsi_delete(fds[packetno%max_iods], NSOCK_PENDING_SILENT);
+            nsock_iod_delete(fds[packetno%max_iods], NSOCK_PENDING_SILENT);
         }
         /* Create new IOD for connects */
-        if ((fds[packetno%max_iods] = nsi_new(nsp, NULL)) == NULL)
+        if ((fds[packetno%max_iods] = nsock_iod_new(nsp, NULL)) == NULL)
             nping_fatal(QT_3, "tcpconnect_event_handler(): Failed to create new nsock_iod.\n");
 
         /* Set socket source address. This allows setting things like custom source port */
         struct sockaddr_storage ss;
-        nsi_set_localaddr(fds[packetno%max_iods], o.getSourceSockAddr(&ss), sizeof(sockaddr_storage));
+        nsock_iod_set_localaddr(fds[packetno%max_iods], o.getSourceSockAddr(&ss), sizeof(sockaddr_storage));
         /*Set socket options for REUSEADDR*/
-        //setsockopt(nsi_getsd(fds[packetno%max_iods]),SOL_SOCKET,SO_REUSEADDR,&optval,sizeof(optval));
+        //setsockopt(nsock_iod_get_sd(fds[packetno%max_iods]),SOL_SOCKET,SO_REUSEADDR,&optval,sizeof(optval));
 
         nsock_connect_tcp(nsp, fds[packetno%max_iods], tcpconnect_event_handler, 100000, mypacket, (struct sockaddr *)&to, sslen, mypacket->dstport);
         if( o.showSentPackets() ){
@@ -2051,7 +2053,7 @@ void ProbeMode::probe_tcpconnect_event_handler(nsock_pool nsp, nsock_event nse, 
     * because there may be other reasons why ge get NSE_STATUS_ERROR so that's
     * why we say "Possible TCP RST received". */
     if ( type == NSE_TYPE_CONNECT ){
-        nsi_getlastcommunicationinfo(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
+        nsock_iod_get_communication_info(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
         if(family==AF_INET6){
             inet_ntop(AF_INET6, &peer6->sin6_addr, ipstring, sizeof(ipstring));
             peerport=ntohs(peer6->sin6_port);
@@ -2211,15 +2213,15 @@ void ProbeMode::probe_udpunpriv_event_handler(nsock_pool nsp, nsock_event nse, v
          * If we don't have a response by that time we probably aren't gonna
          * get any, so it shouldn't be a big problem. */
         if( packetno>(u32)max_iods ){
-            nsi_delete(fds[packetno%max_iods], NSOCK_PENDING_SILENT);
+            nsock_iod_delete(fds[packetno%max_iods], NSOCK_PENDING_SILENT);
         }
         /* Create new IOD for connects */
-        if ((fds[packetno%max_iods] = nsi_new(nsp, NULL)) == NULL)
+        if ((fds[packetno%max_iods] = nsock_iod_new(nsp, NULL)) == NULL)
             nping_fatal(QT_3, "Failed to create new nsock_iod.  QUITTING.\n");
 
         /* Set socket source address. This allows setting things like custom source port */
         struct sockaddr_storage ss;
-        nsi_set_localaddr(fds[packetno%max_iods], o.getSourceSockAddr(&ss), sizeof(sockaddr_storage));
+        nsock_iod_set_localaddr(fds[packetno%max_iods], o.getSourceSockAddr(&ss), sizeof(sockaddr_storage));
 
 
         /* I dunno if it's safe to schedule an nsock_write before we
@@ -2248,7 +2250,7 @@ void ProbeMode::probe_udpunpriv_event_handler(nsock_pool nsp, nsock_event nse, v
      */
     case NSE_TYPE_WRITE:
         /* Determine which target are we dealing with */
-        nsi_getlastcommunicationinfo(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
+        nsock_iod_get_communication_info(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
         if(family==AF_INET6){
             inet_ntop(AF_INET6, &peer6->sin6_addr, ipstring, sizeof(ipstring));
             peerport=ntohs(peer6->sin6_port);
@@ -2291,7 +2293,7 @@ void ProbeMode::probe_udpunpriv_event_handler(nsock_pool nsp, nsock_event nse, v
             nping_fatal(QT_3, "Error: nse_readbuff failed to read in the from the probe");
         }
         /* Determine which target are we dealing with */
-        nsi_getlastcommunicationinfo(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
+        nsock_iod_get_communication_info(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
         if(family==AF_INET6){
             inet_ntop(AF_INET6, &peer6->sin6_addr, ipstring, sizeof(ipstring));
             peerport=ntohs(peer6->sin6_port);
@@ -2330,7 +2332,7 @@ void ProbeMode::probe_udpunpriv_event_handler(nsock_pool nsp, nsock_event nse, v
  } else if (status == NSE_STATUS_EOF) {
     nping_print(DBG_4, "udpunpriv_event_handler(): Unexpected behaviour: Got EOF. Please report this bug.\n");
  } else if (status == NSE_STATUS_ERROR) {
-    nsi_getlastcommunicationinfo(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
+    nsock_iod_get_communication_info(nsi, NULL, &family, NULL, (struct sockaddr*)&peer, sizeof(struct sockaddr_storage) );
     if(family==AF_INET6){
         inet_ntop(AF_INET6, &peer6->sin6_addr, ipstring, sizeof(ipstring));
         peerport=ntohs(peer6->sin6_port);

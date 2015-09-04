@@ -3,7 +3,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -104,8 +104,7 @@ static void proxy_http_node_delete(struct proxy_node *node) {
   if (!node)
     return;
 
-  if (node->nodestr)
-    free(node->nodestr);
+  free(node->nodestr);
 
   free(node);
 }
@@ -154,7 +153,7 @@ static int handle_state_tcp_connected(struct npool *nsp, struct nevent *nse, voi
   if (!((reslen >= 15) && strstr(res, "200 OK"))) {
     struct proxy_node *node = px_ctx->px_current;
 
-    nsock_log_debug(nsp, "Connection refused from proxy %s", node->nodestr);
+    nsock_log_debug("Connection refused from proxy %s", node->nodestr);
     return -EINVAL;
   }
 

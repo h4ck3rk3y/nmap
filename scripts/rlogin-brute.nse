@@ -6,7 +6,9 @@ local shortport = require "shortport"
 local stdnse = require "stdnse"
 
 description=[[
-Performs brute force password auditing against the classic UNIX rlogin (remote login) service.  This script must be run in privileged mode on UNIX because it must bind to a low source port number.
+Performs brute force password auditing against the classic UNIX rlogin (remote
+login) service.  This script must be run in privileged mode on UNIX because it
+must bind to a low source port number.
 ]]
 
 ---
@@ -144,7 +146,8 @@ arg_timeout = (arg_timeout or 10) * 1000
 action = function(host, port)
 
   if ( not(nmap.is_privileged()) ) then
-    return "\n  ERROR: rlogin-brute needs Nmap to be run in privileged mode"
+    stdnse.verbose1("Script must be run in privileged mode. Skipping.")
+    return stdnse.format_output(false, "rlogin-brute needs Nmap to be run in privileged mode")
   end
 
   local options = {

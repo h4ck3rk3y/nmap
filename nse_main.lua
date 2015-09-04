@@ -143,6 +143,7 @@ do -- Add loader to look in nselib/?.lua (nselib/ can be in multiple places)
 end
 
 local lpeg = require "lpeg";
+local U = require "lpeg-utility"
 local locale = lpeg.locale;
 local P = lpeg.P;
 local R = lpeg.R;
@@ -277,7 +278,7 @@ end
 -- Return a pattern which matches a "keyword" literal, case insensitive.
 local function K (a)
   local insensitize = Cf((P(1) / function (a) return S(lower(a)..upper(a)) end)^1, function (a, b) return a * b end);
-  return assert(insensitize:match(a)) * -(locale().alnum + P "_"); -- "keyword" token
+  return assert(insensitize:match(a)) * #(V "space" + S"()," + P(-1)); -- "keyword" token
 end
 
 local REQUIRE_ERROR = {};
@@ -467,7 +468,7 @@ do
       co = co,
       env = env,
       identifier = tostring(co),
-      info = format("%s M:%s", self.id, match(tostring(co), "0x(.*)"));
+      info = format("%s M:%s", self.id, match(tostring(co), "^thread: 0?[xX]?(.*)"));
       parent = nil, -- placeholder
       script = self,
       type = script_type,
@@ -485,7 +486,7 @@ do
       args = pack(...),
       close_handlers = {},
       co = co,
-      info = format("%s W:%s", self.id, match(tostring(co), "0x(.*)"));
+      info = format("%s W:%s", self.id, match(tostring(co), "^thread: 0?[xX]?(.*)"));
       parent = self,
       worker = true,
     };
@@ -1192,9 +1193,8 @@ do
       av = Cg(V "value");
       value = V "table" + V "string";
       string = V "qstring" + V "uqstring";
-      qstring = P "'" * C((-P "'" * (P "\\'" + P(1)))^0) * P "'" +
-                P '"' * C((-P '"' * (P '\\"' + P(1)))^0) * P '"';
-      uqstring = V "space"^0 * C((P(1) - V "space"^0 * S ",}=")^0) * V "space"^0; -- everything but ',}=', do not capture final space
+      qstring = U.escaped_quote('"') + U.escaped_quote("'");
+      uqstring = V "space"^0 * C((P(1) - V "space"^0 * S ",{}=")^0) * V "space"^0; -- everything but ',{}=', do not capture final space
     };
     parser = assert(P(parser));
     nmap.registry.args = parser:match("{"..args.."}");

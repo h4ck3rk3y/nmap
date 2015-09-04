@@ -8,7 +8,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -138,7 +138,7 @@ extern "C" {
 #endif
 
 #include "dnet.h"
-
+#include <nbase.h>
 
 /* It is VERY important to never change the value of these two constants. 
  * Specially, OP_FAILURE should never be positive, as some pieces of code take

@@ -1,3 +1,4 @@
+local comm = require "comm"
 local coroutine = require "coroutine"
 local math = require "math"
 local nmap = require "nmap"
@@ -133,10 +134,11 @@ license = "Same as Nmap--See http://nmap.org/book/man-legal.html"
 categories = {"discovery", "intrusive"}
 
 
--- Test this many ciphersuites at a time.
+-- Test at most this many ciphersuites at a time.
 -- http://seclists.org/nmap-dev/2012/q3/156
 -- http://seclists.org/nmap-dev/2010/q1/859
 local CHUNK_SIZE = 64
+local have_ssl, _ = pcall(require,'openssl')
 
 -- Add additional context (protocol) to debug output
 local function ctx_log(level, protocol, fmt, ...)
@@ -239,6 +241,7 @@ local function sorted_keys(t)
 end
 
 local function in_chunks(t, size)
+  size = math.floor(size)
   local ret = {}
   for i = 1, #t, size do
     local chunk = {}
@@ -501,15 +504,13 @@ local function find_ciphers_group(host, port, protocol, group, scores)
                 kex_strength = 512
               end
             else
-              if kex.pubkey then
+              if have_ssl and kex.pubkey then
                 local certs = get_body(handshake, "type", "certificate")
                 -- Assume RFC compliance:
                 -- "The sender's certificate MUST come first in the list."
                 -- This may not always be the case, so
                 -- TODO: reorder certificates and validate entire chain
                 -- TODO: certificate validation (date, self-signed, etc)
-                -- TODO: Handle this gracefully when OpenSSL is not compiled in
-                --       (throws error otherwise)
                 local c = sslcert.parse_ssl_certificate(certs.certificates[1])
                 if c.pubkey.type == kex.pubkey then
                   local sigalg = c.sig_algorithm:match("([mM][dD][245])")
@@ -557,15 +558,34 @@ local function find_ciphers_group(host, port, protocol, group, scores)
   return results, protocol_worked
 end
 
+local function get_chunk_size(host, protocol)
+  -- Try to make sure we don't send too big of a handshake
+  -- https://github.com/ssllabs/research/wiki/Long-Handshake-Intolerance
+  local len_t = {
+    protocol = protocol,
+    ciphers = {},
+    extensions = tcopy(base_extensions),
+  }
+  if host.targetname then
+    len_t.extensions.server_name = tls.EXTENSION_HELPERS.server_name(host.targetname)
+  end
+  local cipher_len_remaining = 255 - #tls.client_hello(len_t)
+  -- if we're over 255 anyway, just go for it.
+  -- Each cipher adds 2 bytes
+  local max_chunks = cipher_len_remaining > 0 and cipher_len_remaining / 2 or CHUNK_SIZE
+  -- otherwise, use the min
+  return max_chunks < CHUNK_SIZE and max_chunks or CHUNK_SIZE
+end
+
 -- Break the cipher list into chunks of CHUNK_SIZE (for servers that can't
 -- handle many client ciphers at once), and then call find_ciphers_group on
 -- each chunk.
 local function find_ciphers(host, port, protocol)
-  local ciphers = in_chunks(sorted_keys(tls.CIPHERS), CHUNK_SIZE)
+
+  local ciphers = in_chunks(sorted_keys(tls.CIPHERS), get_chunk_size(host, protocol))
 
   local results = {}
   local scores = {warnings={}}
-
   -- Try every cipher.
   for _, group in ipairs(ciphers) do
     local chunk, protocol_worked = find_ciphers_group(host, port, protocol, group, scores)
@@ -721,7 +741,7 @@ end
 -- Sort ciphers according to server preference with a modified merge sort
 local function sort_ciphers(host, port, protocol, ciphers)
   local chunks = {}
-  for _, group in ipairs(in_chunks(ciphers, CHUNK_SIZE)) do
+  for _, group in ipairs(in_chunks(ciphers, get_chunk_size(host, protocol))) do
     local size = #group
     local chunk = find_ciphers_group(host, port, protocol, group)
     if not chunk then
@@ -767,7 +787,8 @@ local function try_protocol(host, port, protocol, upresults)
   end
   -- Find all valid compression methods.
   local compressors
-  for _, c in ipairs(in_chunks(ciphers, CHUNK_SIZE)) do
+  -- Reduce chunk size by 1 to allow extra room for the extra compressors (2 bytes)
+  for _, c in ipairs(in_chunks(ciphers, get_chunk_size(host, protocol) - 1)) do
     compressors = find_compressors(host, port, protocol, c)
     -- I observed a weird interaction between ECDSA ciphers and DEFLATE compression.
     -- Some servers would reject the handshake if no non-ECDSA ciphers were available.
@@ -796,7 +817,6 @@ local function try_protocol(host, port, protocol, upresults)
   end
 
   -- Add rankings to ciphers
-  local cipherstr
   for i, name in ipairs(ciphers) do
     local outcipher = {name=name, kex_info=scores[name].extra, strength=scores[name].letter_grade}
     setmetatable(outcipher,{
@@ -829,7 +849,39 @@ local function try_protocol(host, port, protocol, upresults)
 end
 
 portrule = function (host, port)
-  return shortport.ssl(host, port) or sslcert.getPrepareTLSWithoutReconnect(port)
+  if shortport.ssl(host, port) or sslcert.getPrepareTLSWithoutReconnect(port) then
+    return true
+  end
+  -- selected by name and we didn't detect something *not* SSL
+  if (port.version.name_confidence <= 3 and nmap.version_intensity() == 9) then
+    -- check whether it's an SSL service
+    local is_ssl = false
+    -- probes from nmap-service-probes
+    for _, probe in ipairs({
+        --TLSSessionReq
+        "\x16\x03\0\x00g\x01\0\x001\x03\x03U\x1c\xa7\xe4random1random2random3\z
+        random4\0\x00\x0a\0/\0\x0a\0\x13\x009\0\x04\x01\0\0\x30\0\x0d\0,\0*\0\z
+        \x01\0\x03\0\x02\x06\x01\x06\x03\x06\x02\x02\x01\x02\x03\x02\x02\x03\x01\z
+        \x03\x03\x03\x02\x04\x01\x04\x03\x04\x02\x01\x01\x01\x03\x01\x02\x05\x01\z
+        \x05\x03\x05\x02",
+        -- SSLSessionReq
+        "\x16\x03\0\0S\x01\0\0O\x03\0?G\xd7\xf7\xba,\xee\xea\xb2`~\xf3\0\xfd\z
+        \x82{\xb9\xd5\x96\xc8w\x9b\xe6\xc4\xdb<=\xdbo\xef\x10n\0\0(\0\x16\0\x13\z
+        \0\x0a\0f\0\x05\0\x04\0e\0d\0c\0b\0a\0`\0\x15\0\x12\0\x09\0\x14\0\x11\0\z
+        \x08\0\x06\0\x03\x01\0",
+      }) do
+      local status, resp = comm.exchange(host, port, probe)
+      if status and resp and (
+          resp:match("^\x16\x03[\0-\x03]..\x02...\x03[\0-\x03]") or
+          resp:match("^\x15\x03[\0-\x03]\0\x02\x02[F\x28]")
+          ) then
+        is_ssl = true
+        break
+      end
+    end
+    return is_ssl
+  end
+  return false
 end
 
 --- Return a table that yields elements sorted by key when iterated over with pairs()
@@ -853,6 +905,10 @@ function sorted_by_key(t)
 end
 
 action = function(host, port)
+
+  if not have_ssl then
+    stdnse.verbose("OpenSSL not available; some cipher scores will be marked as unknown.")
+  end
 
   local results = {}
 

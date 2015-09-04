@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -128,9 +128,8 @@
 
 class FingerPrintResults;
 
-#include "nmap.h"
-#include "global_structures.h"
 #include "FPEngine.h"
+#include "osscan.h"
 
 /* Maximum number of results allowed in one of these things ... */
 #define MAX_FP_RESULTS 36
@@ -173,6 +172,7 @@ class FingerPrintResults {
                             otherwise -1) */
   int distance; /* How "far" is this FP gotten from? */
   int distance_guess; /* How "far" is this FP gotten from? by guessing based on ttl. */
+  enum dist_calc_method distance_calculation_method;
 
   /* The largest ratio we have seen of time taken vs. target time
      between sending 1st tseq probe and sending first ICMP echo probe.

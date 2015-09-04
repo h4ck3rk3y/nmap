@@ -18,7 +18,7 @@ LLMNR responses that are sent to the local machine with a 5355 UDP source port.
 A hostname to resolve must be provided.
 
 For more information, see:
-    * http://technet.microsoft.com/en-us/library/bb878128.aspx
+* http://technet.microsoft.com/en-us/library/bb878128.aspx
 ]]
 
 ---
@@ -184,7 +184,7 @@ action = function()
     interface = getInterface(mcast)
   end
   if not interface then
-    return ("\n ERROR: Couldn't get interface for %s"):format(mcast)
+    return stdnse.format_output(false, ("Couldn't get interface for %s"):format(mcast))
   end
 
   -- Launch listener thread

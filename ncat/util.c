@@ -2,7 +2,7 @@
  * util.c -- Various utility functions.                                    *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -440,16 +440,30 @@ int do_listen(int type, int proto, const union sockaddr_u *srcaddr_u)
 #endif
 #endif
 
+    switch(srcaddr_u->storage.ss_family) {
 #ifdef HAVE_SYS_UN_H
-    if (srcaddr_u->storage.ss_family == AF_UNIX)
+      case AF_UNIX:
         sa_len = SUN_LEN(&srcaddr_u->un);
-    else
+        break;
 #endif
 #ifdef HAVE_SOCKADDR_SA_LEN
+      default:
         sa_len = srcaddr_u->sockaddr.sa_len;
+        break;
 #else
-        sa_len = sizeof(*srcaddr_u);
+      case AF_INET:
+        sa_len = sizeof (struct sockaddr_in);
+        break;
+#ifdef AF_INET6
+      case AF_INET6:
+        sa_len = sizeof (struct sockaddr_in6);
+        break;
 #endif
+      default:
+        sa_len = sizeof(*srcaddr_u);
+        break;
+#endif
+    }
 
     if (bind(sock, &srcaddr_u->sockaddr, sa_len) < 0) {
 #ifdef HAVE_SYS_UN_H

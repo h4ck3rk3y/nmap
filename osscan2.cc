@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -131,11 +131,13 @@
 #include "Target.h"
 #include "utils.h"
 #include "FPEngine.h"
+#include "FingerPrintResults.h"
 #include <dnet.h>
 
 #include "struct_ip.h"
 
 #include <list>
+#include <math.h>
 
 extern NmapOps o;
 
@@ -386,6 +388,56 @@ int get_ipid_sequence_16(int numSamples, u32 *ipids, int islocalhost) {
   }
   else {
     return ipid_seq;
+  }
+}
+
+/* Convert a TCP sequence prediction difficulty index like 1264386
+   into a difficulty string like "Worthy Challenge */
+const char *seqidx2difficultystr(unsigned long idx) {
+  return  (idx < 3) ? "Trivial joke" : (idx < 6) ? "Easy" : (idx < 11) ? "Medium" : (idx < 12) ? "Formidable" : (idx < 16) ? "Worthy challenge" : "Good luck!";
+}
+
+const char *ipidclass2ascii(int seqclass) {
+  switch (seqclass) {
+  case IPID_SEQ_CONSTANT:
+    return "Duplicated ipid (!)";
+  case IPID_SEQ_INCR:
+    return "Incremental";
+  case IPID_SEQ_INCR_BY_2:
+    return "Incrementing by 2";
+  case IPID_SEQ_BROKEN_INCR:
+    return "Broken little-endian incremental";
+  case IPID_SEQ_RD:
+    return "Randomized";
+  case IPID_SEQ_RPI:
+    return "Random positive increments";
+  case IPID_SEQ_ZERO:
+    return "All zeros";
+  case IPID_SEQ_UNKNOWN:
+    return "Busy server or unknown class";
+  default:
+    return "ERROR, WTF?";
+  }
+}
+
+const char *tsseqclass2ascii(int seqclass) {
+  switch (seqclass) {
+  case TS_SEQ_ZERO:
+    return "zero timestamp";
+  case TS_SEQ_2HZ:
+    return "2HZ";
+  case TS_SEQ_100HZ:
+    return "100HZ";
+  case TS_SEQ_1000HZ:
+    return "1000HZ";
+  case TS_SEQ_OTHER_NUM:
+    return "other";
+  case TS_SEQ_UNSUPPORTED:
+    return "none returned (unsupported)";
+  case TS_SEQ_UNKNOWN:
+    return "unknown class";
+  default:
+    return "ERROR, WTF?";
   }
 }
 

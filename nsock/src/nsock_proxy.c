@@ -3,7 +3,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -109,7 +109,7 @@ int nsock_proxychain_new(const char *proxystr, nsock_proxychain *chain, nsock_po
   }
 
   if (nsp) {
-    if (nsp_set_proxychain(nspool, pxc) < 0) {
+    if (nsock_pool_set_proxychain(nspool, pxc) < 0) {
       nsock_proxychain_delete(pxc);
       return -1;
     }
@@ -121,27 +121,27 @@ int nsock_proxychain_new(const char *proxystr, nsock_proxychain *chain, nsock_po
 
 void nsock_proxychain_delete(nsock_proxychain chain) {
   struct proxy_chain *pchain = (struct proxy_chain *)chain;
+  gh_lnode_t *lnode;
 
-  if (pchain) {
-    gh_lnode_t *lnode;
+  if (!pchain)
+    return;
 
-    while ((lnode = gh_list_pop(&pchain->nodes)) != NULL) {
-      struct proxy_node *node;
+  while ((lnode = gh_list_pop(&pchain->nodes)) != NULL) {
+    struct proxy_node *node;
 
-      node = container_of(lnode, struct proxy_node, nodeq);
-      node->spec->ops->node_delete(node);
-    }
-
-    gh_list_free(&pchain->nodes);
-    free(pchain);
+    node = container_of(lnode, struct proxy_node, nodeq);
+    node->spec->ops->node_delete(node);
   }
+
+  gh_list_free(&pchain->nodes);
+  free(pchain);
 }
 
-int nsp_set_proxychain(nsock_pool nspool, nsock_proxychain chain) {
+int nsock_pool_set_proxychain(nsock_pool nspool, nsock_proxychain chain) {
   struct npool *nsp = (struct npool *)nspool;
 
   if (nsp && nsp->px_chain) {
-    nsock_log_error(nsp, "Invalid call. Existing proxychain on this nsock_pool");
+    nsock_log_error("Invalid call. Existing proxychain on this nsock_pool");
     return -1;
   }
 
@@ -163,21 +163,15 @@ struct proxy_chain_context *proxy_chain_context_new(nsock_pool nspool) {
 }
 
 void proxy_chain_context_delete(struct proxy_chain_context *ctx) {
-  if (ctx)
-    free(ctx);
+  free(ctx);
 }
 
 static void uri_free(struct uri *uri) {
-  if (uri->scheme)
-    free(uri->scheme);
-  if (uri->user)
-    free(uri->user);
-  if (uri->pass)
-    free(uri->pass);
-  if (uri->host)
-    free(uri->host);
-  if (uri->path)
-    free(uri->path);
+  free(uri->scheme);
+  free(uri->user);
+  free(uri->pass);
+  free(uri->host);
+  free(uri->path);
 }
 
 static int lowercase(char *s) {
@@ -426,7 +420,7 @@ void forward_event(nsock_pool nspool, nsock_event nsevent, void *udata) {
   if (nse->status != NSE_STATUS_SUCCESS)
     nse->status = NSE_STATUS_PROXYERROR;
 
-  nsock_log_info(nsp, "Forwarding event upstream: TCP connect %s (IOD #%li) EID %li",
+  nsock_log_info("Forwarding event upstream: TCP connect %s (IOD #%li) EID %li",
                  nse_status2str(nse->status), nse->iod->id, nse->id);
 
   nse->iod->px_ctx->target_handler(nsp, nse, udata);

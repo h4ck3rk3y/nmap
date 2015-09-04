@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -126,11 +126,15 @@
 
 #include "FPEngine.h"
 #include "Target.h"
+#include "FingerPrintResults.h"
 #include "NmapOps.h"
 #include "nmap_error.h"
 #include "osscan.h"
 #include "linear.h"
+#include "FPModel.h"
 extern NmapOps o;
+
+#include <math.h>
 
 
 /******************************************************************************
@@ -162,7 +166,7 @@ FPNetworkControl::FPNetworkControl() {
 FPNetworkControl::~FPNetworkControl() {
   if (this->nsock_init) {
     nsock_event_cancel(this->nsp, this->pcap_ev_id, 0);
-    nsp_delete(this->nsp);
+    nsock_pool_delete(this->nsp);
     this->nsock_init = false;
   }
 }
@@ -177,30 +181,30 @@ void FPNetworkControl::init(const char *ifname, devtype iftype) {
 
    /* If there was a previous nsock pool, delete it */
   if (this->pcap_nsi) {
-    nsi_delete(this->pcap_nsi, NSOCK_PENDING_SILENT);
+    nsock_iod_delete(this->pcap_nsi, NSOCK_PENDING_SILENT);
   }
   if (this->nsock_init) {
     nsock_event_cancel(this->nsp, this->pcap_ev_id, 0);
-    nsp_delete(this->nsp);
+    nsock_pool_delete(this->nsp);
   }
 
   /* Create a new nsock pool */
-  if ((this->nsp = nsp_new(NULL)) == NULL)
+  if ((this->nsp = nsock_pool_new(NULL)) == NULL)
     fatal("Unable to obtain an Nsock pool");
 
-  nsock_set_log_function(this->nsp, nmap_nsock_stderr_logger);
-  nmap_adjust_loglevel(this->nsp, o.packetTrace());
+  nsock_set_log_function(nmap_nsock_stderr_logger);
+  nmap_adjust_loglevel(o.packetTrace());
 
-  nsp_setdevice(nsp, o.device);
+  nsock_pool_set_device(nsp, o.device);
 
   if (o.proxy_chain)
-    nsp_set_proxychain(this->nsp, o.proxy_chain);
+    nsock_pool_set_proxychain(this->nsp, o.proxy_chain);
 
   /* Allow broadcast addresses */
-  nsp_setbroadcast(this->nsp, 1);
+  nsock_pool_set_broadcast(this->nsp, 1);
 
   /* Allocate an NSI for packet capture */
-  this->pcap_nsi = nsi_new(this->nsp, NULL);
+  this->pcap_nsi = nsock_iod_new(this->nsp, NULL);
   this->first_pcap_scheduled = false;
 
   /* Flag it as already initialized so we free this nsp next time */
@@ -408,7 +412,7 @@ int FPNetworkControl::setup_sniffer(const char *iface, const char *bpf_filter) {
     fatal("Error opening capture device %s\n", pcapdev);
 
   /* Store the pcap NSI inside the pool so we can retrieve it inside a callback */
-  nsp_setud(this->nsp, (void *)&(this->pcap_nsi));
+  nsock_pool_set_udata(this->nsp, (void *)&(this->pcap_nsi));
 
   return OP_SUCCESS;
 }
@@ -417,7 +421,7 @@ int FPNetworkControl::setup_sniffer(const char *iface, const char *bpf_filter) {
 /* This method makes the controller process pending events (like packet
  * transmissions or packet captures). */
 void FPNetworkControl::handle_events() {
-  nmap_adjust_loglevel(nsp, o.packetTrace());
+  nmap_adjust_loglevel(o.packetTrace());
   nsock_loop(nsp, 50);
 }
 
@@ -437,8 +441,8 @@ int FPNetworkControl::scheduleProbe(FPProbe *pkt, int in_msecs_time) {
  * The reason for that is because C++ does not allow to use class methods as callback
  * functions, so this is a small hack to make that happen. */
 void FPNetworkControl::probe_transmission_handler(nsock_pool nsp, nsock_event nse, void *arg) {
-  assert(nsp_getud(nsp) != NULL);
-  nsock_iod nsi_pcap = *((nsock_iod *)nsp_getud(nsp));
+  assert(nsock_pool_get_udata(nsp) != NULL);
+  nsock_iod nsi_pcap = *((nsock_iod *)nsock_pool_get_udata(nsp));
   enum nse_status status = nse_status(nse);
   enum nse_type type = nse_type(nse);
   FPProbe *myprobe = (FPProbe *)arg;
@@ -697,14 +701,6 @@ FPEngine6::~FPEngine6() {
 
 }
 
-
-/* From FPModel.cc. */
-extern struct model FPModel;
-extern double FPscale[][2];
-extern double FPmean[][659];
-extern double FPvariance[][659];
-extern FingerMatch FPmatches[];
-
 /* Not all operating systems allow setting the flow label in outgoing packets;
    notably all Unixes other than Linux when using raw sockets. This function
    finds out whether the flow labels we set are likely really being sent.
@@ -784,6 +780,43 @@ static double vectorize_tc(const PacketElement *pe) {
     return ipv6->getTrafficClass();
 }
 
+/* For reference, the dev@nmap.org email thread which contains the explanations for the
+ * design decisions of this vectorization method:
+ * http://seclists.org/nmap-dev/2015/q1/218
+ */
+static int vectorize_hlim(const PacketElement *pe, int target_distance, enum dist_calc_method method) {
+  const IPv6Header *ipv6;
+  int hlim;
+  int er_lim;
+
+  ipv6 = find_ipv6(pe);
+  if (ipv6 == NULL)
+    return -1;
+  hlim = ipv6->getHopLimit();
+
+  if (method != DIST_METHOD_NONE) {
+      if (method == DIST_METHOD_TRACEROUTE || method == DIST_METHOD_ICMP) {
+        if (target_distance > 0)
+          hlim += target_distance - 1;
+      }
+      er_lim = 5;
+  } else
+    er_lim = 20;
+
+  if (32 - er_lim <= hlim && hlim <= 32+ 5 )
+    hlim = 32;
+  else if (64 - er_lim <= hlim && hlim <= 64+ 5 )
+    hlim = 64;
+  else if (128 - er_lim <= hlim && hlim <= 128+ 5 )
+    hlim = 128;
+  else if (255 - er_lim <= hlim && hlim <= 255+ 5 )
+    hlim = 255;
+  else
+    hlim = -1;
+
+  return hlim;
+}
+
 static double vectorize_isr(std::map<std::string, FPPacket>& resps) {
   const char * const SEQ_PROBE_NAMES[] = {"S1", "S2", "S3", "S4", "S5", "S6"};
   u32 seqs[NELEMS(SEQ_PROBE_NAMES)];
@@ -857,6 +890,7 @@ static struct feature_node *vectorize(const FingerPrintResultsIPv6 *FPR) {
     probe_name = IPV6_PROBE_NAMES[i];
     features[idx++].value = vectorize_plen(resps[probe_name].getPacket());
     features[idx++].value = vectorize_tc(resps[probe_name].getPacket());
+    features[idx++].value = vectorize_hlim(resps[probe_name].getPacket(), FPR->distance, FPR->distance_calculation_method);
   }
   /* TCP features */
   features[idx++].value = vectorize_isr(resps);
@@ -1539,7 +1573,9 @@ void FPHost6::finish() {
   }
 
   this->target_host->distance = this->target_host->FPR->distance = distance;
-  this->target_host->distance_calculation_method = distance_calculation_method;
+  this->target_host->distance_calculation_method =
+    this->target_host->FPR->distance_calculation_method =
+    distance_calculation_method;
 }
 
 struct tcp_desc {

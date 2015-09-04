@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -126,30 +126,9 @@
 #ifndef TARGETS_H
 #define TARGETS_H
 
-#ifdef HAVE_CONFIG_H
-#include "nmap_config.h"
-#else
-#ifdef WIN32
-#include "nmap_winconfig.h"
-#endif /* WIN32 */
-#endif /* HAVE_CONFIG_H */
-
-/* This contains pretty much everything we need ... */
-#if HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h> /* Defines MAXHOSTNAMELEN on BSD*/
-#endif
-
-#include "nmap.h"
-#include "global_structures.h"
-#include "TargetGroup.h"
+#include <list>
+class NetBlock;
+class Target;
 
 class TargetGroup {
 public:
@@ -159,10 +138,7 @@ public:
     this->netblock = NULL;
   }
 
-  ~TargetGroup() {
-    if (this->netblock != NULL)
-      delete this->netblock;
-  }
+  ~TargetGroup();
 
   /* Initializes (or reinitializes) the object with a new expression,
      such as 192.168.0.0/16 , 10.1.0-5.1-254 , or

@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -74,8 +74,6 @@
 
 extern struct timeval nsock_tod;
 
-unsigned long nsp_next_id = 2;
-
 /* To use this library, the first thing they must do is create a pool
  * so we do the initialization during the first pool creation */
 static int nsocklib_initialized = 0;
@@ -89,44 +87,37 @@ static void nsock_library_initialize(void);
 /* --------------------------------------- */
 
 
-/* Every mst has an ID that is unique across the program execution */
-unsigned long nsp_getid(nsock_pool nsp) {
-  struct npool *mt = (struct npool *)nsp;
-  return mt->id;
-}
-
 /* This next function returns the errno style error code -- which is only
  * valid if the status NSOCK_LOOP_ERROR was returned by nsock_loop() */
-
-int nsp_geterrorcode(nsock_pool nsp) {
+int nsock_pool_get_error(nsock_pool nsp) {
   struct npool *mt = (struct npool *)nsp;
   return mt->errnum;
 }
 
 /* Sometimes it is useful to store a pointer to information inside
  * the NSP so you can retrieve it during a callback. */
-void nsp_setud(nsock_pool nsp, void *data) {
+void nsock_pool_set_udata(nsock_pool nsp, void *data) {
   struct npool *mt = (struct npool *)nsp;
   mt->userdata = data;
 }
 
 /* And the define above wouldn't make much sense if we didn't have a way
  * to retrieve that data ... */
-void *nsp_getud(nsock_pool nsp) {
+void *nsock_pool_get_udata(nsock_pool nsp) {
   struct npool *mt = (struct npool *)nsp;
   return mt->userdata;
 }
 
 /* Turns on or off broadcast support on new sockets. Default is off (0, false)
- * set in nsp_new(). Any non-zero (true) value sets SO_BROADCAST on all new
+ * set in nsock_pool_new(). Any non-zero (true) value sets SO_BROADCAST on all new
  * sockets (value of optval will be used directly in the setsockopt() call */
-void nsp_setbroadcast(nsock_pool nsp, int optval) {
+void nsock_pool_set_broadcast(nsock_pool nsp, int optval) {
   struct npool *mt = (struct npool *)nsp;
   mt->broadcast = optval;
 }
 
 /* Sets the name of the interface for new sockets to bind to. */
-void nsp_setdevice(nsock_pool nsp, const char *device) {
+void nsock_pool_set_device(nsock_pool nsp, const char *device) {
   struct npool *mt = (struct npool *)nsp;
   mt->device = device;
 }
@@ -145,7 +136,7 @@ static int expirable_cmp(gh_hnode_t *n1, gh_hnode_t *n2) {
  * returns an nsock_pool event aggregator.  In the case of error, NULL will be
  * returned.  If you do not wish to immediately associate any userdata, pass in
  * NULL. */
-nsock_pool nsp_new(void *userdata) {
+nsock_pool nsock_pool_new(void *userdata) {
   struct npool *nsp;
 
   /* initialize the library in not already done */
@@ -158,11 +149,6 @@ nsock_pool nsp_new(void *userdata) {
   memset(nsp, 0, sizeof(*nsp));
 
   gettimeofday(&nsock_tod, NULL);
-
-  nsp->loglevel = NSOCK_LOG_ERROR;
-  nsp->logger   = (nsock_logger_t)nsock_stderr_logger;
-
-  nsp->id = nsp_next_id++;
 
   nsp->userdata = userdata;
 
@@ -200,11 +186,11 @@ nsock_pool nsp_new(void *userdata) {
   return (nsock_pool)nsp;
 }
 
-/* If nsp_new returned success, you must free the nsp when you are done with it
+/* If nsock_pool_new returned success, you must free the nsp when you are done with it
  * to conserve memory (and in some cases, sockets).  After this call, nsp may no
  * longer be used.  Any pending events are sent an NSE_STATUS_KILL callback and
  * all outstanding iods are deleted. */
-void nsp_delete(nsock_pool ms_pool) {
+void nsock_pool_delete(nsock_pool ms_pool) {
   struct npool *nsp = (struct npool *)ms_pool;
   struct nevent *nse;
   struct niod *nsi;
@@ -276,7 +262,7 @@ void nsp_delete(nsock_pool ms_pool) {
     next = gh_lnode_next(current);
     nsi = container_of(current, struct niod, nodeq);
 
-    nsi_delete(nsi, NSOCK_PENDING_ERROR);
+    nsock_iod_delete(nsi, NSOCK_PENDING_ERROR);
 
     gh_list_remove(&nsp->active_iods, current);
     gh_list_prepend(&nsp->free_iods, &nsi->nodeq);

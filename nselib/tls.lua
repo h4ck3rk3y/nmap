@@ -355,19 +355,19 @@ CIPHERS = {
 ["TLS_DHE_RSA_WITH_AES_256_CBC_SHA256"]            =  0x006B,
 ["TLS_DH_anon_WITH_AES_128_CBC_SHA256"]            =  0x006C,
 ["TLS_DH_anon_WITH_AES_256_CBC_SHA256"]            =  0x006D,
-["TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD"]       =  0x0072,  --draft-ietf-tls-openpgp-keys-05
-["TLS_DHE_DSS_WITH_AES_128_CBC_RMD"]        =  0x0073,  --draft-ietf-tls-openpgp-keys-05
-["TLS_DHE_DSS_WITH_AES_256_CBC_RMD"]        =  0x0074,  --draft-ietf-tls-openpgp-keys-05
-["TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD"]       =  0x0077,  --draft-ietf-tls-openpgp-keys-05
-["TLS_DHE_RSA_WITH_AES_128_CBC_RMD"]        =  0x0078,  --draft-ietf-tls-openpgp-keys-05
-["TLS_DHE_RSA_WITH_AES_256_CBC_RMD"]        =  0x0079,  --draft-ietf-tls-openpgp-keys-05
-["TLS_RSA_WITH_3DES_EDE_CBC_RMD"]           =  0x007C,  --draft-ietf-tls-openpgp-keys-05
-["TLS_RSA_WITH_AES_128_CBC_RMD"]            =  0x007D,  --draft-ietf-tls-openpgp-keys-05
-["TLS_RSA_WITH_AES_256_CBC_RMD"]            =  0x007E,  --draft-ietf-tls-openpgp-keys-05
-["TLS_GOSTR341094_WITH_28147_CNT_IMIT"]     =  0x0080,  --draft-chudov-cryptopro-cptls-04
-["TLS_GOSTR341001_WITH_28147_CNT_IMIT"]     =  0x0081,  --draft-chudov-cryptopro-cptls-04
-["TLS_GOSTR341094_WITH_NULL_GOSTR3411"]     =  0x0082,  --draft-chudov-cryptopro-cptls-04
-["TLS_GOSTR341001_WITH_NULL_GOSTR3411"]     =  0x0083,  --draft-chudov-cryptopro-cptls-04
+["TLS_DHE_DSS_WITH_3DES_EDE_CBC_RMD-draft"]       =  0x0072,  --draft-ietf-tls-openpgp-keys-05
+["TLS_DHE_DSS_WITH_AES_128_CBC_RMD-draft"]        =  0x0073,  --draft-ietf-tls-openpgp-keys-05
+["TLS_DHE_DSS_WITH_AES_256_CBC_RMD-draft"]        =  0x0074,  --draft-ietf-tls-openpgp-keys-05
+["TLS_DHE_RSA_WITH_3DES_EDE_CBC_RMD-draft"]       =  0x0077,  --draft-ietf-tls-openpgp-keys-05
+["TLS_DHE_RSA_WITH_AES_128_CBC_RMD-draft"]        =  0x0078,  --draft-ietf-tls-openpgp-keys-05
+["TLS_DHE_RSA_WITH_AES_256_CBC_RMD-draft"]        =  0x0079,  --draft-ietf-tls-openpgp-keys-05
+["TLS_RSA_WITH_3DES_EDE_CBC_RMD-draft"]           =  0x007C,  --draft-ietf-tls-openpgp-keys-05
+["TLS_RSA_WITH_AES_128_CBC_RMD-draft"]            =  0x007D,  --draft-ietf-tls-openpgp-keys-05
+["TLS_RSA_WITH_AES_256_CBC_RMD-draft"]            =  0x007E,  --draft-ietf-tls-openpgp-keys-05
+["TLS_GOSTR341094_WITH_28147_CNT_IMIT-draft"]     =  0x0080,  --draft-chudov-cryptopro-cptls-04
+["TLS_GOSTR341001_WITH_28147_CNT_IMIT-draft"]     =  0x0081,  --draft-chudov-cryptopro-cptls-04
+["TLS_GOSTR341094_WITH_NULL_GOSTR3411-draft"]     =  0x0082,  --draft-chudov-cryptopro-cptls-04
+["TLS_GOSTR341001_WITH_NULL_GOSTR3411-draft"]     =  0x0083,  --draft-chudov-cryptopro-cptls-04
 ["TLS_RSA_WITH_CAMELLIA_256_CBC_SHA"]              =  0x0084,
 ["TLS_DH_DSS_WITH_CAMELLIA_256_CBC_SHA"]           =  0x0085,
 ["TLS_DH_RSA_WITH_CAMELLIA_256_CBC_SHA"]           =  0x0086,
@@ -656,28 +656,28 @@ local cipher_info_cache = {
     hash = "SHA",
     draft = true
   },
-  ["TLS_GOSTR341094_WITH_28147_CNT_IMIT"] = {
+  ["TLS_GOSTR341094_WITH_28147_CNT_IMIT-draft"] = {
     kex = "GOSTR341094",
     server_auth = "GOSTR341094",
     cipher = "GOST28147",
     hash = "IMIT_GOST28147",
     draft = true
   },
-  ["TLS_GOSTR341001_WITH_28147_CNT_IMIT"] = {
+  ["TLS_GOSTR341001_WITH_28147_CNT_IMIT-draft"] = {
     kex = "GOSTR341001",
     server_auth = "GOSTR341001",
     cipher = "GOST28147",
     hash = "IMIT_GOST28147",
     draft = true
   },
-  ["TLS_GOSTR341094_WITH_NULL_GOSTR3411"] = {
+  ["TLS_GOSTR341094_WITH_NULL_GOSTR3411-draft"] = {
     kex = "GOSTR341094",
     server_auth = "GOSTR341094",
     cipher = "NULL",
     hash = "HMAC_GOSTR3411",
     draft = true
   },
-  ["TLS_GOSTR341001_WITH_NULL_GOSTR3411"] = {
+  ["TLS_GOSTR341001_WITH_NULL_GOSTR3411-draft"] = {
     kex = "GOSTR341001",
     server_auth = "GOSTR341001",
     cipher = "NULL",
@@ -690,7 +690,7 @@ local cipher_info_cache = {
 -- A couple helpers for server_key_exchange parsing
 local function unpack_dhparams (blob, pos)
   local p, g, y
-  pos, p, g, y = bin.unpack(">PPP", blob)
+  pos, p, g, y = bin.unpack(">PPP", blob, pos)
   return pos, {p=p, g=g, y=y}, #p
 end
 
@@ -941,7 +941,7 @@ KEX_ALGORITHMS.DHE_PSK = {
     local pos
     local ret = {}
     pos, ret.psk_identity_hint = bin.unpack(">P", blob)
-    pos, ret.dhparams, ret.strength = unpack_dhparams(blob)
+    pos, ret.dhparams, ret.strength = unpack_dhparams(blob, pos)
     return ret
   end
 }
@@ -955,7 +955,7 @@ KEX_ALGORITHMS.ECDHE_PSK={
     local pos
     local ret = {}
     pos, ret.psk_identity_hint = bin.unpack(">P", blob)
-    pos, ret.ecdhparams, ret.strength = unpack_ecdhparams(blob)
+    pos, ret.ecdhparams, ret.strength = unpack_ecdhparams(blob, pos)
     return ret
   end
 }

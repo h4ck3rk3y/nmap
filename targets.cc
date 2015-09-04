@@ -6,7 +6,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -340,6 +340,11 @@ static bool target_needs_new_hostgroup(const HostGroupState *hs, const Target *t
   return false;
 }
 
+TargetGroup::~TargetGroup() {
+  if (this->netblock != NULL)
+    delete this->netblock;
+}
+
 /* Initializes (or reinitializes) the object with a new expression, such
    as 192.168.0.0/16 , 10.1.0-5.1-254 , or fe80::202:e3ff:fe14:1102 .
    Returns 0 for success */
@@ -372,6 +377,7 @@ int TargetGroup::get_next_host(struct sockaddr_storage *ss, size_t *sslen) {
     this->netblock = netblock_hostname->resolve();
     if (this->netblock == NULL) {
       error("Failed to resolve \"%s\".", netblock_hostname->hostname.c_str());
+      delete netblock_hostname;
       return -1;
     }
     delete netblock_hostname;

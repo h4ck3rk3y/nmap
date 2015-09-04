@@ -4,7 +4,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -70,10 +70,10 @@ nsock_event_id nsock_timer_create(nsock_pool ms_pool, nsock_ev_handler handler,
   nse = event_new(nsp, NSE_TYPE_TIMER, NULL, timeout_msecs, handler, userdata);
   assert(nse);
 
-  nsock_log_info(nsp, "Timer created - %dms from now.  EID %li", timeout_msecs,
+  nsock_log_info("Timer created - %dms from now.  EID %li", timeout_msecs,
                  nse->id);
 
-  nsp_add_event(nsp, nse);
+  nsock_pool_add_event(nsp, nse);
   
   return nse->id;
 }

@@ -436,7 +436,7 @@ end
 -- construct and return the correct links.
 local POPULAR_IDS_LINKS = {
   CVE = function(id)
-          local link = 'http://cve.mitre.org/cgi-bin/cvename.cgi?name='
+          local link = 'https://cve.mitre.org/cgi-bin/cvename.cgi?name='
           return string_format("%s%s", link, id)
         end,
   OSVDB = function(id)
@@ -1767,7 +1767,11 @@ local format_vuln_special_fields = function(vuln_field)
   if vuln_field then
     if type(vuln_field) == "table" then
       for _, line in ipairs(vuln_field) do
-        tadd(out, stdnse.strsplit("\r?\n", line))
+				if type(line) == "string" then
+          tadd(out, stdnse.strsplit("\r?\n", line))
+				else
+					insert(out, line)
+				end
       end
     elseif type(vuln_field) == "string" then
       out = stdnse.strsplit("\r?\n", vuln_field)
@@ -1834,7 +1838,7 @@ local format_vuln_base = function(vuln_table, showall)
       local risk_str = ""
 
       if vuln_table.scores and next(vuln_table.scores) then
-	output_table.scores = vuln_table.scores
+        output_table.scores = vuln_table.scores
         for score_type, score in pairs(vuln_table.scores) do
           risk_str = risk_str .. string_format("  %s: %s", score_type, score)
         end
@@ -1858,10 +1862,10 @@ local format_vuln_base = function(vuln_table, showall)
       output_table.dates = vuln_table.dates
       if vuln_table.dates.disclosure and
       next(vuln_table.dates.disclosure) then
-        output_table.disclosure = string_format("%s-%s-%s", 
-				vuln_table.dates.disclosure.year,
-				vuln_table.dates.disclosure.month,
-				vuln_table.dates.disclosure.day)
+        output_table.disclosure = string_format("%s-%s-%s",
+          vuln_table.dates.disclosure.year,
+          vuln_table.dates.disclosure.month,
+          vuln_table.dates.disclosure.day)
         insert(out, string_format("  Disclosure date: %s-%s-%s",
                         vuln_table.dates.disclosure.year,
                         vuln_table.dates.disclosure.month,
@@ -1928,7 +1932,7 @@ local format_vuln_base = function(vuln_table, showall)
       local ref_str = {}
       for link in pairs(ref_set) do
         insert(out, string_format("    %s", link))
-	table.insert(ref_str, link)
+        table.insert(ref_str, link)
       end
       output_table.refs = ref_str
     end
@@ -2241,10 +2245,10 @@ Report = {
       insert(output, "VULNERABLE:")
       for i, vuln_table in ipairs(self.entries.vulns) do
         local vuln_out, out_t = format_vuln_base(vuln_table)
-        if type(out_t) == "table" then 
-	  for i, v, k in pairs(out_t) do
-		  output_t2[i]=v
-	  end
+        if type(out_t) == "table" then
+          for i, v, k in pairs(out_t) do
+            output_t2[i]=v
+          end
         end
         if vuln_out then
           output_table.report = concat(vuln_out, "\n")
@@ -2264,10 +2268,10 @@ Report = {
       end
       for i, vuln_table in ipairs(self.entries.not_vulns) do
         local vuln_out, out_t = format_vuln_base(vuln_table, SHOW_ALL)
-        if type(out_t) == "table" then 
-	  for i, v, k in pairs(out_t) do
-		  output_t2[i]=v
-	  end
+        if type(out_t) == "table" then
+          for i, v, k in pairs(out_t) do
+            output_t2[i]=v
+          end
         end
         if vuln_out then
           output_table.report = concat(vuln_out, "\n")

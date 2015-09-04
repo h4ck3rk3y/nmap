@@ -5,7 +5,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -120,7 +120,7 @@ enum iod_state {
   NSIOD_STATE_DELETED,
   NSIOD_STATE_INITIAL,
 
-  /* sd was provided to us in nsi_new2 (see nsock_pool.c) */
+  /* sd was provided to us in nsock_iod_new2 (see nsock_iod.c) */
   NSIOD_STATE_UNKNOWN,
 
   NSIOD_STATE_CONNECTED_TCP,
@@ -152,10 +152,6 @@ struct writeinfo {
 /* Remember that callers of this library should NOT be accessing these
  * fields directly */
 struct npool {
-
-  /* Every msp has a unique (across the program execution) id */
-  unsigned long id;
-
   /* User data, NULL if unset */
   void *userdata;
 
@@ -193,10 +189,6 @@ struct npool {
    * error (errnum fashion) */
   int errnum;
 
-  /* Logging information. */
-  nsock_logger_t logger;
-  nsock_loglevel_t loglevel;
-
   /* If true, new sockets will have SO_BROADCAST set */
   int broadcast;
 
@@ -213,7 +205,7 @@ struct npool {
 #endif
 
   /* Optional proxy chain (NULL is not set). Can only be set once per NSP (using
-   * nsock_proxychain_new() or nsp_set_proxychain(). */
+   * nsock_proxychain_new() or nsock_pool_set_proxychain(). */
   struct proxy_chain *px_chain;
 
 };
@@ -462,7 +454,7 @@ void event_delete(struct npool *nsp, struct nevent *nse);
 /* Add an event to the appropriate nsp event list, handles housekeeping such as
  * adjusting the descriptor select/poll lists, registering the timeout value,
  * etc. */
-void nsp_add_event(struct npool *nsp, struct nevent *nse);
+void nsock_pool_add_event(struct npool *nsp, struct nevent *nse);
 
 void nsock_connect_internal(struct npool *ms, struct nevent *nse, int type, int proto, struct sockaddr_storage *ss, size_t sslen, unsigned short port);
 

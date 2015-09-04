@@ -1,11 +1,10 @@
 
 /***************************************************************************
- * global_structures.h -- Common structure definitions used by Nmap        *
- * components.                                                             *
+ * dns_request_generation.cc -- Tests DNS request generation               *
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -121,224 +120,144 @@
  *                                                                         *
  ***************************************************************************/
 
-/* $Id$ */
+#include "../nmap_dns.h"
+
+#include <iostream>
+
+#define TEST_INCR(pred,acc) \
+if ( !(pred) ) \
+{ \
+  std::cout << "Test " << #pred << " failed at " << __FILE__ << ":" << __LINE__ << std::endl; \
+  ++acc; \
+}
+
+int main()
+{
+  std::cout << "Testing nmap_dns" << std::endl;
+
+  int ret = 0;
+  std::string target = "scanme.nmap.org";
+  DNS::RECORD_TYPE rt = DNS::A;
+  const size_t buflen = 1500;
+  u8 buf[buflen];
+  size_t reqlen = DNS::Factory::buildSimpleRequest(target, rt, buf, buflen);
+  
+  DNS::Packet p;
+  size_t plen = p.parseFromBuffer(buf, buflen);
+  TEST_INCR(reqlen == plen, ret);
+
+  DNS::Query * q = &*p.queries.begin();
+  TEST_INCR(q->name == target, ret);
+  TEST_INCR(q->record_class == DNS::IN, ret);
+  TEST_INCR(q->record_type == rt, ret);
 
 
-#ifndef GLOBAL_STRUCTURES_H
-#define GLOBAL_STRUCTURES_H
+  // This is a possible answere for an A query for scanme.nmap.org
+  const char ipp[] = "45.33.32.156";
+  const size_t answere_len = 49;
+  const u8 answere_buf[] = { 0x92, 0xdc, // Trsnsaction ID
+                       0x81, 0x80, // Flags
+                       0x00, 0x01, // Questions count
+                       0x00, 0x01, // Answers RRs count
+                       0x00, 0x00, // Authorities RRs count
+                       0x00, 0x00, // Additionals RRs count
+                       0x06, // Label lenght <-- [12]
+                       0x73, 0x63, 0x61, 0x6e, 0x6d, 0x65, // "scanme"
+                       0x04, // Label lenght
+                       0x6e, 0x6d, 0x61, 0x70, // "nmap"
+                       0x03, // Label lenght
+                       0x6f, 0x72, 0x67, // "org"
+                       0x00, // Name terminator
+                       0x00, 0x01, // A
+                       0x00, 0x01, // IN
+                       0xc0, 0x0c, // Compressed name pointer to offset 12
+                       0x00, 0x01, // A
+                       0x00, 0x01, // IN
+                       0x00, 0x00, 0x0e, 0x0f, // TTL 3599
+                       0x00, 0x04, // Record Lenght
+                       0x2d, 0x21, 0x20, 0x9c }; // 45.33.32.156
 
-#include <vector>
+  plen = p.parseFromBuffer(answere_buf, answere_len);
+  TEST_INCR(answere_len == plen, ret);
 
-class TargetGroup;
-class Target;
+  q = &*p.queries.begin();
+  TEST_INCR(q->name == target, ret);
+  TEST_INCR(q->record_class == DNS::IN, ret);
+  TEST_INCR(q->record_type == rt, ret );
 
-/* Stores "port info" which is TCP/UDP/SCTP ports or RPC program ids */
-struct portinfo {
-   unsigned long portno; /* TCP/UDP/SCTP port or RPC program id or IP protocool */
-   short trynum;
-   int sd[3]; /* Socket descriptors for connect_scan */
-   struct timeval sent[3];
-   int state;
-   int next; /* not struct portinfo * for historical reasons */
-   int prev;
-};
+  DNS::Answer * a = &*p.answers.begin();
+  TEST_INCR(a->name == target, ret );
+  TEST_INCR(a->record_class == DNS::IN, ret);
+  TEST_INCR(a->record_type == DNS::A, ret);
+  TEST_INCR(a->ttl == 3599, ret)
 
-struct portinfolist {
-   struct portinfo *openlist;
-   struct portinfo *firewalled;
-   struct portinfo *testinglist;
-};
+  DNS::A_Record * ar = static_cast<DNS::A_Record *>(a->record);
+  char ar_ipp[INET6_ADDRSTRLEN];
+  sockaddr_storage_iptop(&ar->value, ar_ipp);
+  TEST_INCR(!strcmp(ipp, ar_ipp), ret);
 
-struct udpprobeinfo {
-  u16 iptl;
-  u16 ipid;
-  u16 ipck;
-  u16 sport;
-  u16 dport;
-  u16 udpck;
-  u16 udplen;
-  u8 patternbyte;
-  struct in_addr target;
-};
+  const size_t ptr_answere_len = 72;
+  std::string ptr_target;
+  TEST_INCR(DNS::Factory::ipToPtr(ar->value, ptr_target), ret);
+  TEST_INCR(ptr_target == "156.32.33.45.in-addr.arpa", ret);
+  const u8 ptr_answere[] = { 0x08, 0xf2, // ID
+                               0x81, 0x80, // Flags
+                               0x00, 0x01, // Questions count
+                               0x00, 0x01, // Answers RRs count
+                               0x00, 0x00, // Authorities RRs count
+                               0x00, 0x00, // Additionals RRs count
+                               0x03, // Label lenght
+                               0x31, 0x35, 0x36, // "156"
+                               0x02, // Label lenght
+                               0x33, 0x32, // "32"
+                               0x02, // Label lenght
+                               0x33, 0x33, // "33"
+                               0x02, // Label lenght
+                               0x34, 0x35, // "45"
+                               0x07, // Label lenght
+                               0x69, 0x6e, 0x2d, 0x61, 0x64, 0x64, 0x72, // "in-addr"
+                               0x04, // Label lenght
+                               0x61, 0x72, 0x70, 0x61, // "arpa"
+                               0x00, // Name terminator
+                               0x00, 0x0c, // PTR
+                               0x00, 0x01, // IN
+                               0xc0, 0x0c, // Compressed name pointer to offset 12
+                               0x00, 0x0c, // PTR
+                               0x00, 0x01, // IN
+                               0x00, 0x01, 0x51, 0x78, // TTL 86392
+                               0x00, 0x11, // Record Lenght
+                               0x06, // Label lenght
+                               0x73, 0x63, 0x61, 0x6e, 0x6d, 0x65, // "scanme"
+                               0x04, // Label lenght
+                               0x6e, 0x6d, 0x61, 0x70, // "nmap"
+                               0x03, // Label lenght
+                               0x6f, 0x72, 0x67, // "org"
+                               0x00 };  // Name terminator
 
-/* The runtime statistics used to decide how fast to proceed and how
-   many ports we can try at once */
-struct scanstats {
-  int packet_incr;
-  int initial_packet_width; /* Number of queries in parallel we should
-                               start with */
-  double fallback_percent;
-  int numqueries_outstanding; /* How many unexpired queries are on the 'net
-                                 right now? */
-  double numqueries_ideal; /* How many do we WANT to be on the 'net right now? */
-  int max_width; /* What is the MOST we will tolerate at once.  Can be
-                    modified via --max_parallelism */
-  int min_width; /* We must always allow at least this many at once.  Can
-                    be modified via --min_parallelism*/
-  int ports_left;
-  int changed; /* Has anything changed since last round? */
-  int alreadydecreasedqueries;
-};
+  plen = p.parseFromBuffer(ptr_answere, ptr_answere_len);
+  TEST_INCR(plen == ptr_answere_len, ret);
+  TEST_INCR(p.id == 0x08f2, ret);
+  TEST_INCR(p.flags == 0x8180, ret);
+  TEST_INCR(p.queries.size() == 1, ret);
+  TEST_INCR(p.answers.size() == 1, ret);
 
-struct AVal {
-  const char *attribute;
-  const char *value;
+  q = &*p.queries.begin();
+  TEST_INCR(q->name == ptr_target, ret);
+  TEST_INCR(q->record_class == DNS::IN, ret);
+  TEST_INCR(q->record_type == DNS::PTR, ret);
 
-  bool operator<(const AVal& other) const {
-    return strcmp(attribute, other.attribute) < 0;
-  }
-};
+  a = &*p.answers.begin();
+  TEST_INCR(a->name == ptr_target, ret);
+  TEST_INCR(a->record_class == DNS::IN, ret);
+  TEST_INCR(a->record_type == DNS::PTR, ret);
+  TEST_INCR(a->length == 0x11, ret);
+  TEST_INCR(a->ttl == 86392, ret);
 
-struct OS_Classification {
-  const char *OS_Vendor;
-  const char *OS_Family;
-  const char *OS_Generation; /* Can be NULL if unclassified */
-  const char *Device_Type;
-  std::vector<const char *> cpe;
-};
+  DNS::PTR_Record * r = static_cast<DNS::PTR_Record *>(a->record);
+  TEST_INCR(r->value == target, ret);
 
-/* A description of an operating system: a human-readable name and a list of
-   classifications. */
-struct FingerMatch {
-  int line; /* For reference prints, the line # in nmap-os-db */
-  char *OS_name;
-  std::vector<OS_Classification> OS_class;
+  if(ret) std::cout << "Testing nmap_dns finished with errors" << std::endl;
+  else std::cout << "Testing nmap_dns finished without errors" << std::endl;
 
-  FingerMatch() {
-    line = -1;
-    OS_name = NULL;
-  }
-};
-
-struct FingerTest {
-  const char *name;
-  std::vector<struct AVal> results;
-  bool operator<(const FingerTest& other) const {
-    return strcmp(name, other.name) < 0;
-  }
-};
-
-struct FingerPrint {
-  FingerMatch match;
-  std::vector<FingerTest> tests;
-  FingerPrint();
-  void sort();
-};
-
-/* This structure contains the important data from the fingerprint
-   database (nmap-os-db) */
-struct FingerPrintDB {
-  FingerPrint *MatchPoints;
-  std::vector<FingerPrint *> prints;
-
-  FingerPrintDB();
-  ~FingerPrintDB();
-};
-
-/* Based on TCP congestion control techniques from RFC2581. */
-struct ultra_timing_vals {
-  double cwnd; /* Congestion window - in probes */
-  int ssthresh; /* The threshold above which mode is changed from slow start
-                   to congestion avoidance */
-  /* The number of replies we would expect if every probe produced a reply. This
-     is almost like the total number of probes sent but it is not incremented
-     until a reply is received or a probe times out. This and
-     num_replies_received are used to scale congestion window increments. */
-  int num_replies_expected;
-  /* The number of replies we've received to probes of any type. */
-  int num_replies_received;
-  /* Number of updates to this timing structure (generally packet receipts). */
-  int num_updates;
-  /* Last time values were adjusted for a drop (you usually only want
-     to adjust again based on probes sent after that adjustment so a
-     sudden batch of drops doesn't destroy timing.  Init to now */
-  struct timeval last_drop;
-
-  double cc_scale(const struct scan_performance_vars *perf);
-  void ack(const struct scan_performance_vars *perf, double scale = 1.0);
-  void drop(unsigned in_flight,
-    const struct scan_performance_vars *perf, const struct timeval *now);
-  void drop_group(unsigned in_flight,
-    const struct scan_performance_vars *perf, const struct timeval *now);
-};
-
-/* These are mainly initializers for ultra_timing_vals. */
-struct scan_performance_vars {
-  int low_cwnd;  /* The lowest cwnd (congestion window) allowed */
-  int host_initial_cwnd; /* Initial congestion window for ind. hosts */
-  int group_initial_cwnd; /* Initial congestion window for all hosts as a group */
-  int max_cwnd; /* I should never have more than this many probes
-                   outstanding */
-  int slow_incr; /* How many probes are incremented for each response
-                    in slow start mode */
-  int ca_incr; /* How many probes are incremented per (roughly) rtt in
-                  congestion avoidance mode */
-  int cc_scale_max; /* The maximum scaling factor for congestion window
-                       increments. */
-  int initial_ssthresh;
-  double group_drop_cwnd_divisor; /* all-host group cwnd divided by this
-                                     value if any packet drop occurs */
-  double group_drop_ssthresh_divisor; /* used to drop the group ssthresh when
-                                         any drop occurs */
-  double host_drop_ssthresh_divisor; /* used to drop the host ssthresh when
-                                         any drop occurs */
-
-  /* Do initialization after the global NmapOps table has been filled in. */
-  void init();
-};
-
-struct timeout_info {
-  int srtt; /* Smoothed rtt estimate (microseconds) */
-  int rttvar; /* Rout trip time variance */
-  int timeout; /* Current timeout threshold (microseconds) */
-};
-
-struct seq_info {
-  int responses;
-  int ts_seqclass; /* TS_SEQ_* defines in nmap.h */
-  int ipid_seqclass; /* IPID_SEQ_* defines in nmap.h */
-  u32 seqs[NUM_SEQ_SAMPLES];
-  u32 timestamps[NUM_SEQ_SAMPLES];
-  int index;
-  u16 ipids[NUM_SEQ_SAMPLES];
-  long lastboot; /* 0 means unknown */
-};
-
-/* Different kinds of Ipids. */
-struct ipid_info {
-  u32 tcp_ipids[NUM_SEQ_SAMPLES];
-  u32 tcp_closed_ipids[NUM_SEQ_SAMPLES];
-  u32 icmp_ipids[NUM_SEQ_SAMPLES];
-};
-
-/* The various kinds of port/protocol scans we can have
- * Each element is to point to an array of port/protocol numbers
- */
-struct scan_lists {
-        /* The "synprobes" are also used when doing a connect() ping */
-        unsigned short *syn_ping_ports;
-        unsigned short *ack_ping_ports;
-        unsigned short *udp_ping_ports;
-        unsigned short *sctp_ping_ports;
-        unsigned short *proto_ping_ports;
-        int syn_ping_count;
-        int ack_ping_count;
-        int udp_ping_count;
-        int sctp_ping_count;
-        int proto_ping_count;
-        //the above fields are only used for host discovery
-        //the fields below are only used for port scanning
-        unsigned short *tcp_ports;
-        int tcp_count;
-        unsigned short *udp_ports;
-        int udp_count;
-        unsigned short *sctp_ports;
-        int sctp_count;
-        unsigned short *prots;
-        int prot_count;
-};
-
-typedef enum { STYPE_UNKNOWN, HOST_DISCOVERY, ACK_SCAN, SYN_SCAN, FIN_SCAN, XMAS_SCAN, UDP_SCAN, CONNECT_SCAN, NULL_SCAN, WINDOW_SCAN, SCTP_INIT_SCAN, SCTP_COOKIE_ECHO_SCAN, MAIMON_SCAN, IPPROT_SCAN, PING_SCAN, PING_SCAN_ARP, IDLE_SCAN, BOUNCE_SCAN, SERVICE_SCAN, OS_SCAN, SCRIPT_PRE_SCAN, SCRIPT_SCAN, SCRIPT_POST_SCAN, TRACEROUTE, PING_SCAN_ND }stype;
-
-#endif /*GLOBAL_STRUCTURES_H */
-
+  return ret; // 0 means ok
+}

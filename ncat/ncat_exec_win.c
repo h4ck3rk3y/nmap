@@ -2,7 +2,7 @@
  * ncat_exec_win.c -- Windows-specific subprocess execution.               *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -172,8 +172,8 @@ int netrun(struct fdinfo *fdn, char *cmdexec)
 
     pid = start_subprocess(cmdexec, info);
     if (pid == -1) {
-        free(info);
         close(info->fdn.fd);
+        free(info);
         return -1;
     }
 

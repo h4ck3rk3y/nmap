@@ -7,7 +7,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -134,8 +134,6 @@
 #include <queue>
 #include <set>
 #include <string>
-
-#include "nmap.h"
 
 /* We use bit vectors to represent what values are allowed in an IPv4 octet.
    Each vector is built up of an array of bitvector_t (any convenient integer

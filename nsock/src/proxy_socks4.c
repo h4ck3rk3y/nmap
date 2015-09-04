@@ -3,7 +3,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -122,8 +122,7 @@ static void proxy_socks4_node_delete(struct proxy_node *node) {
   if (!node)
     return;
 
-  if (node->nodestr)
-    free(node->nodestr);
+  free(node->nodestr);
 
   free(node);
 }
@@ -185,7 +184,7 @@ static int handle_state_tcp_connected(struct npool *nsp, struct nevent *nse, voi
   if (!(reslen == 8 && res[1] == 90)) {
     struct proxy_node *node = px_ctx->px_current;
 
-    nsock_log_debug(nsp, "Ignoring invalid socks4 reply from proxy %s",
+    nsock_log_debug("Ignoring invalid socks4 reply from proxy %s",
                     node->nodestr);
     return -EINVAL;
   }

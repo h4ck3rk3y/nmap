@@ -3,7 +3,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -179,7 +179,7 @@ int epoll_iod_register(struct npool *nsp, struct niod *iod, int ev) {
   if (ev & EV_EXCEPT)
     epev.events |= EPOLL_X_FLAGS;
 
-  sd = nsi_getsd(iod);
+  sd = nsock_iod_get_sd(iod);
   if (epoll_ctl(einfo->epfd, EPOLL_CTL_ADD, sd, &epev) < 0)
     fatal("Unable to register IOD #%lu: %s", iod->id, strerror(errno));
 
@@ -196,7 +196,7 @@ int epoll_iod_unregister(struct npool *nsp, struct niod *iod) {
     struct epoll_engine_info *einfo = (struct epoll_engine_info *)nsp->engine_data;
     int sd;
 
-    sd = nsi_getsd(iod);
+    sd = nsock_iod_get_sd(iod);
     epoll_ctl(einfo->epfd, EPOLL_CTL_DEL, sd, NULL);
 
     IOD_PROPCLR(iod, IOD_REGISTERED);
@@ -234,7 +234,7 @@ int epoll_iod_modify(struct npool *nsp, struct niod *iod, int ev_set, int ev_clr
   if (iod->watched_events & EV_EXCEPT)
     epev.events |= EPOLL_X_FLAGS;
 
-  sd = nsi_getsd(iod);
+  sd = nsock_iod_get_sd(iod);
 
   if (epoll_ctl(einfo->epfd, EPOLL_CTL_MOD, sd, &epev) < 0)
     fatal("Unable to update events for IOD #%lu: %s", iod->id, strerror(errno));
@@ -265,7 +265,7 @@ int epoll_loop(struct npool *nsp, int msec_timeout) {
   do {
     struct nevent *nse;
 
-    nsock_log_debug_all(nsp, "wait for events");
+    nsock_log_debug_all("wait for events");
 
     nse = next_expirable_event(nsp);
     if (!nse)
@@ -306,7 +306,7 @@ int epoll_loop(struct npool *nsp, int msec_timeout) {
   } while (results_left == -1 && sock_err == EINTR); /* repeat only if signal occurred */
 
   if (results_left == -1 && sock_err != EINTR) {
-    nsock_log_error(nsp, "nsock_loop error %d: %s", sock_err, socket_strerror(sock_err));
+    nsock_log_error("nsock_loop error %d: %s", sock_err, socket_strerror(sock_err));
     nsp->errnum = sock_err;
     return -1;
   }

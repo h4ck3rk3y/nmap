@@ -1,5 +1,305 @@
 # Nmap Changelog ($Id$); -*-text-*-
 
+o [NSE] Added script http-ls. Parses web server directory index pages with
+  optional recursion. [Pierre Lalet]
+
+o [NSE] [GH#106] Added a new NSE module, ls.lua, for accumulating and
+  outputting file and directory listings. The afp-ls, nfs-ls, and smb-ls
+  scripts have been converted to use this module. [Pierre Lalet]
+
+o Fix Nmap's DTD, which did not recognize that the script element could contain
+  character data when a script returns a number or a boolean.
+  [Jonathan Daugherty]
+
+o [GH#75] Normalize check targets to standard format check-*.
+  [Gioacchino Mazzurco]
+
+o [GH#75] Normalize clean and distclean targets to standard format clean-* and
+  distclean-*. [Gioacchino Mazzurco]
+
+o [GH#75] Normalize build targets to standard format build-*.
+  [Gioacchino Mazzurco]
+
+o [NSE] Added script xmlrpc-methods. This script perfoms introspection of
+  xmlrpc services and lists methods and their description. [Gyanendra Mishra]
+
+o [NSE] Removed http-email-harvest as the the new http-grep does email address
+  scraping by default. [Gyanendra Mishra]
+
+o [NSE] Added script http-fetch. This script can be used to fetch all files
+  from the target, specific files from the target or files that match a  given
+  pattern. [Gyanendra Mishra]
+
+o [NSE] http-drupal-modules was renamed to http-drupal-enum. Extended to
+  enumerate both themesa and modules of drupal installaions. [Gyanendra Mishra]
+
+o [GH#196] Fix raw packet sending on FreeBSD 10.0 and later. FreeBSD changed
+  byte order of the IPv4 stack, so SYN scan and other raw packet functions were
+  broken. [Edward Napierała] Also reported in [GH#50] by Olli Hauer.
+
+o [NSE] Added script http-svn-enum. Enumerates users of a Subversion
+  repostory by examinning commit logs. [Gyanendra Mishra]
+
+o [NSE] Added script http-svn-info. Requests information from a
+  Subversion repository.[Gyanendra Mishra]
+
+o [GH#51] Added IPv6 support to nmap_mass_rdns, improved reverse DNS cache,
+  and refactored DNS code to improve readability and extensibility.
+  [Gioacchino Mazzurco]
+
+o [NSE] Added NTLM brute support to http-brute. [Gyanendra Mishra]
+
+o [NSE] Added NTLM authentication support to http.lua and a related function to create
+  an ntlm v2 session response in smbauth.lua. [Gyanendra Mishra]
+
+o [NSE] ssl-enum-ciphers now marks cipher scores as unkown for ciphers requiring
+  the use of openssl when openssl is missing. [jrchamp]
+
+o [NSE] Added builtin pattern and multiple pattern search to http-grep. [Gyanendra Mishra]
+
+o [NSE] http-crossdomainxml is now http-cross-domain-policy and supports client access
+  policies and uses the new SLAXML parser. [Gyanendra Mishra]
+
+o [NSE] Added a patch for vulns lib that allows list of tables to be submitted
+  to fields in the vulns report. [Jacob Gajek]
+
+o [NSE] Added additional checks for successful PUT request in http-put.
+  [Oleg Mitrofanov]
+
+o [NSE] Added an update for http-methods that checks all possible methods not in
+  Allow or Public header of OPTIONS response. [Gyanendra Mishra]
+
+o [NSE] Added SLAXML, an XML parser in Lua originally written by Gavin Kistner
+  (a.k.a. Phrogz). [Gyanendra Mishra]
+
+o [NSE] Added hnap-info, detects and outputs info for Home Network
+  Administration Protocol devices. [Gyanendra Mishra]
+
+o [NSE] Allow ssl-enum-ciphers to run on non-typical ports when it is selected
+  by name. It will now send a service detection probe if the port is not a
+  typical SSL port and version scan (-sV) was not used. [Daniel Miller]
+
+o [NSE] Added http-webdav-scan, which detects WebDAV servers. [Gyanendra Mishra]
+
+o [NSE] Added tor-consensus-checker, which checks if a target is a
+  known Tor node. [Jiayi Ye]
+
+
+Nmap 6.49BETA3 [2015-06-25]
+
+o [GH#166] Fix Ncat listen mode on Solaris and other platforms where struct sockaddr
+  does not have a sa_len member. This also affected use of the -p and -s
+  options. Brandon Haberfeld reported the crash. [Daniel Miller]
+
+o [GH#164] Fix a Zenmap failure ot open on OS X with the error:
+  "dyld: Symbol not found: _iconv Referenced from: /usr/lib/libcups.2.dylib"
+  We had to remove the DYLD_LIBRARY_PATH environment variable from
+  zenmap_wrapper.py. Reported by Robert Strom. [Daniel Miller]
+
+o Report our https URL (https://nmap.org) in more places rather than
+  our non-SSL one. [David Fifield]
+
+o [NSE] Fix Diffie-Hellman parameter extraction in tls.lua. [Jacob Gajek]
+
+Nmap 6.49BETA2 [2015-06-16]
+
+o [GH#154] Fix a crash (assertion error) when Nmap recieves an ICMP Host
+  Unreachable message.
+
+o [GH#158] Fix a configure failure when Python is not present, but no Python
+  projects were requested. [Gioacchino Mazzurco]
+
+o [GH#161] [Zenmap] Fix Zenmap on OS X which was failing with
+  zipimport.ZipImportError due to architecture mismatch.
+
+o [NSE] Remove ahbl.org checks from dnsbl.lua, since the service was shut down.
+  [Forrest B.]
+
+Nmap 6.49BETA1 [2015-06-03]
+
+o Integrated all of your IPv4 OS fingerprint submissions from May 2014 to
+  February 2015 (1900+ of them). Added 281 fingerprints, bringing the new total
+  to 4766. Addtions include Linux 3.18, Windows 8.1, OS X 10.10, Android 5.0,
+  FreeBSD 10.1, OpenBSD 5.6, and more. Highlights:
+  http://seclists.org/nmap-dev/2015/q2/169 [Daniel Miller]
+
+o Integrated all of your service/version detection fingerprints submitted from
+  June 2013 to February 2015 (2500+ of them). The signature count soared over
+  the 10000 mark, a 12% increase. We now detect 1062 protocols, from http,
+  telnet, and ftp to jute, bgp, and slurm. Highlights:
+  http://seclists.org/nmap-dev/2015/q2/171 [Daniel Miller]
+
+o Integrated all of your IPv6 OS fingerprint submissions from June 2013 to
+  April 2015 (only 97 of them!). We are steadily improving the IPv6 database,
+  but we need your submissions. The classifier added 9 new groups, bringing the
+  new total to 90. Highlights: http://seclists.org/nmap-dev/2015/q2/170 [Daniel
+  Miller]
+
+o Nmap now has an official bug tracker! We are using Github Issues, which you
+  can reach from http://issues.nmap.org/. We welcome your bug reports,
+  enhancement requests, and code submissions via the Issues and Pull Request
+  features of Github (https://github.com/nmap/nmap), though the repository
+  itself is just a mirror of our authoritative Subversion repository.
+
+o [Zenmap] New Chinese-language (zh) translation from Jie Jiang, new Hindi (hi)
+  translation by Gyanendra Mishra, and updated translations for German (de,
+  Chris Leick), Italian (it, Jan Reister), Polish (pl, Jacek Wielemborek), and
+  French (fr, MaZ)
+
+o Added options --data <hex string> and --data-string <string> to send custom
+  payloads in scan packet data. [Jay Bosamiya]
+
+o --reason is enabled for verbosity > 2, and now includes the TTL of received
+  packets in Normal output (this was already present in XML) [Jay Bosamiya]
+
+o Fix ICMP Echo (-PE) host discovery for IPv6, broken since 6.45, caused by
+  failing to set the ICMP ID for outgoing packets which is used to match
+  incoming responses. [Andrew Waters]
+
+o Solve a crash on Windows (reported on Windows 8.1 on Surface Pro 3) caused by
+  passing a NULL pointer to a WinPcap function that then tries to write an
+  error message to it. [Peter Malecka]
+
+o Enhance Nmap's tcpwrapped service detection by using a shorter timeout for
+  the tcpwrapped designation. This prevents falsely labeling services as
+  tcpwrapped which merely have a read timeout shorter than 6 seconds. Full
+  discussion: http://issues.nmap.org/39 [nnposter, Daniel Miller]
+
+o All nmap.org pages are now available SSL-secured to improve privacy
+  and ensure your binaries can't be tampered with in transit. So be
+  sure to download from https://nmap.org/download.html . We will soon
+  remove the non-SSL version of the site. We still offer GPG-signed
+  binaries as well: https://nmap.org/book/install.html#inst-integrity
+
+o [NSE] Added 25 NSE scripts from 17 authors, bringing the total up to 494!
+  They are all listed at http://nmap.org/nsedoc/, and the summaries are below
+  (authors are listed in brackets):
+
+  + bacnet-info gets device information from SCADA/ICS devices via BACnet
+    (Building Automation and Control Networks) [Stephen Hilt, Michael Toecker]
+
+  + docker-version detects and fingerprints Docker [Claudio Criscione]
+
+  + enip-info gets device information from SCADA/ICS devices via EtherNet/IP
+    [Stephen Hilt]
+
+  + fcrdns performs a Forward-confirmed Reverse DNS lookup and reports
+    anomalous results. [Daniel Miller]
+
+  + http-avaya-ipoffice-users enumerates users in Avaya IP Office 7.x systems.
+    [Paulino Calderon]
+
+  + http-cisco-anyconnect gets version and tunnel information from Cisco SSL
+    VPNs. [Patrik Karlsson]
+
+  + http-crossdomainxml detects overly permissive crossdomain policies and
+    finds trusted domain names available for purchase. [Paulino Calderon]
+
+  + http-shellshock detects web applications vulnerable to Shellshock
+    (CVE-2014-6271). [Paulino Calderon]
+
+  + http-vuln-cve2006-3392 exploits a file disclosure vulnerability in Webmin.
+    [Paul AMAR]
+
+  + http-vuln-cve2014-2126, http-vuln-cve2014-2127, http-vuln-cve2014-2128 and
+    http-vuln-cve2014-2129 detect specific vulnerabilities in Cisco AnyConnect
+    SSL VPNs. [Patrik Karlsson]
+
+  + http-vuln-cve2015-1427 detects Elasticsearch servers vulnerable to remote
+    code execution. [Gyanendra Mishra]
+
+  + http-vuln-cve2015-1635 detects Microsoft Windows systems vulnerable to
+    MS15-034. [Paulino Calderon]
+
+  + http-vuln-misfortune-cookie detects the "Misfortune Cookie" vulnerability
+    in Allegro RomPager 4.07, commonly used in SOHO routers for TR-069 access.
+    [Andrew Orr]
+
+  + http-wordpress-plugins was renamed http-wordpress-enum and extended to
+    enumerate both plugins and themes of Wordpress installations and their
+    versions. http-wordpress-enum is now http-wordpress-users. [Paulino Calderon]
+
+  + mikrotik-routeros-brute performs password auditing attacks against
+    Mikrotik's RouterOS API. [Paulino Calderon]
+
+  + omron-info gets device information from Omron PLCs via the FINS service.
+    [Stephen Hilt]
+
+  + s7-info gets device information from Siemens PLCs via the S7 service,
+    tunneled over ISO-TSAP on TCP port 102. [Stephen Hilt]
+
+  + snmp-info gets the enterprise number and other information from the
+    snmpEngineID in an SNMPv3 response packet. [Daniel Miller]
+
+  + ssl-ccs-injection detects whether a server is vulnerable to the SSL/TLS
+    CCS Injection vulnerability (CVE-2014-0224) [Claudiu Perta]
+
+  + ssl-poodle detects the POODLE bug in SSLv3 (CVE-2014-3566) [Daniel Miller]
+
+  + supermicro-ipmi-conf exploits Supermicro IPMI/BMC controllers. [Paulino
+    Calderon]
+
+  + targets-ipv6-map4to6 generates target IPv6 addresses which correspond to
+    IPv4 addresses mapped within a particular IPv6 subnet. [Raúl Fuentes]
+
+  + targets-ipv6-wordlist generates target IPv6 addresses from a wordlist made
+    of hexadecimal characters. [Raúl Fuentes]
+
+o Update our Windows build system to VS 2013 on Windows 8.1. Also, we now build
+  our included OpenSSL with DEP, ASLR, and SafeSEH enabled. [Daniel Miller]
+
+o Our OS X installer is now built for a minimum supported version of 10.8
+  (Mountain Lion), a much-needed update from 10.5 (Leopard). Additionally,
+  OpenSSL is now statically linked, allowing us to distribute the latest from
+  Macports instead of being subjected to the 0.9.8 branch still in use as of
+  10.9. [Daniel Miller]
+
+o Add 2 more ASCII-art configure splash images to be rotated randomly with the
+  traditional dragon image. New ideas for other images to use here may be sent
+  to dev@nmap.org. [Jay Bosamiya, Daniel Miller]
+
+o Solve a crash on Windows (reported on Windows 8.1 on Surface Pro 3) caused by
+  passing a NULL pointer to a WinPcap function that then tries to write an
+  error message to it. [Peter Malecka]
+
+o Fix compilation and several bugs on AIX. [Daniel Miller]
+
+o Fix a bug in libdnet-stripped on Solaris that resulted in the wrong MAC
+  address being detected for all interfaces.
+  http://seclists.org/nmap-dev/2015/q2/1 [Daniel Miller]
+
+o New features for the IPv6 OS detection engine allow for better classification
+  of systems: IPv6 guessed initial hop limit (TTL) and ratio of TCP initial
+  window size to maximum segment size. [Alexandru Geana]
+
+o [NSE] Rework ssl-enum-ciphers to actually score the strength of the SSL/TLS
+  handshake, including certificate key size and DH parameters if applicable.
+  This is similar to Qualys's SSL Labs scanner, and means that we no longer
+  maintain a list of scores per ciphersuite. [Daniel Miller]
+
+o [NSE] Improved http-form-brute autodetection and behavior to handle more
+  unusual-but-valid HTML syntax, non-POST forms, success/failure testing on
+  HTTP headers, and more. [nnposter]
+
+o [NSE] Reduce many NSE default timeouts and base them on Nmap's detected
+  timeouts for those hosts from the port scan phase. Scripts which take timeout
+  script-args can now handle 's' and 'ms' suffixes, just like Nmap's own
+  options. [Daniel Miller]
+
+o [NSE] Remove db2-discover, as its functionality was performed by service
+  version detection since the broadcast portion was separated into
+  broadcast-db2-discover. http://seclists.org/nmap-dev/2014/q3/415 [Daniel
+  Miller]
+
+o Cache dnet names not found on Windows when enumerating interfaces in the
+  Windows Registry. Reduces startup times. [Elon Natovich]
+
+o [NSE] Make smb-ls able to leverage results from smb-enum-shares or list of
+  shares specified on command line. [Pierre Lalet]
+
+o [NSE] Fix X509 cert date parsing for dates after 2049. Reported by Teppo
+  Turtiainen. [Daniel Miller]
+
 o Handle a bunch of socket errors that can result from odd ICMP Type 3
   Destination Unreachable messages received during service scanning. The crash
   reported was "Unexpected error in NSE_TYPE_READ callback.  Error code: 92
@@ -15,25 +315,8 @@ o Reduce CPU consumption when using nsock poll engine with no registered FD,
   by actually calling Poll() for the time until timeout, instead of directly
   returning zero and entering the loop again. [Henri Doreau]
 
-o Fix ICMP Echo (-PE) host discovery for IPv6, broken since 6.45, caused by
-  failing to set the ICMP ID for outgoing packets which is used to match
-  incoming responses. [Andrew Waters]
-
-o Solve a crash on Windows 8.1 on Surface Pro 3 caused by WinPcap trying to
-  write an error message to a NULL pointer. [Peter Malecka]
-
 o Change the URI for the fingerprint submitter to its new location at
   https://nmap.org/cgi-bin/submit.cgi
-
-o [Zenmap] Added new Hindi (hi) translation by Gyanendra Mishra.
-
-o [NSE] Added a new version of http-wordpress-enum, it now enumerates
-  plugins and themes of Wordpress installations. It also attempts to obtain
-  version information to detect outdated plugins. [Paulino Calderon]
-
-o [NSE] Renamed http-wordpress-enum to http-wordpress-users in favor of
-  the new version of the script http-wordpress-enum which enumerates
-  plugins and themes of Wordpress installations. [Paulino Calderon]
 
 o [NSE] Added a check for Cisco ASA version disclosure, CVE-2014-3398, to
   http-enum in the 'security' category [Daniel Miller]
@@ -43,39 +326,16 @@ o Fixed a bug that caused Nmap to fail to find any network interface when a
   ARP_HRD_IEEE80211_PRISM header identifier in the libdnet-stripped code.
   [Brad Johnson]
 
-o [NSE] Added http-shellshock to detect web applications vulnerable to
-  Shellshock (CVE2014-6271). [Paulino Calderon]
-
 o Added a version probe for Tor. [David Fifield]
-
-o [Zenmap] Updated translations for German (de, Chris Leick), Italian (it, Jan
-  Reister), Polish (pl, Jacek Wielemborek), and French (fr, MaZ)
-
-o [Zenmap] New Chinese-language (zh) translation from Jie Jiang.
-
-o [NSE] Added snmp-info to get the enterprise number and other information from
-  the snmpEngineID in an SNMPv3 response packet. [Daniel Miller]
 
 o [NSE] Add support to citrix-enum-apps-xml for reporting if Citrix
    published applications in the list are enforcing/requiring the level
    of ICA/session data encryption shown in the script result.
    [Tom Sellers]
 
-o [NSE] Added targets-ipv6-wordlist to generate target IPv6 addresses
-  from a wordlist made of hexadecimal characters.  [Raúl Fuentes]
-
-o [NSE] Added targets-ipv6-map4to6 to generate target IPv6 addresses
-  which correspond to IPv4 addresses mapped within a particular IPv6 subnet.
-  [Raúl Fuentes]
-
 o [NSE] Updated our Wordpress plugin list to improve the
-  http-wordpress-plugins NSE script. We can now detect 34,077 plugins,
+  http-wordpress-enum NSE script. We can now detect 34,077 plugins,
   up from 18,570. [Danila Poyarkov]
-
-o [NSE] Rework ssl-enum-ciphers to actually score the strength of the SSL/TLS
-  handshake, including certificate key size and DH parameters if applicable.
-  This is similar to Qualys's SSL Labs scanner, and means that we no longer
-  maintain a list of scores per ciphersuite. [Daniel Miller]
 
 o [NSE] Add the signature algorithm that was used to sign the target port's
   x509 certificate to the output of ssl-cert.nse [Tom Sellers]
@@ -83,19 +343,8 @@ o [NSE] Add the signature algorithm that was used to sign the target port's
 o [NSE] Fixed a bug in the sslcert.lua library that was triggered against
   certain services when version detection was used. [Tom Sellers]
 
-o [NSE] Added ssl-poodle to detect CVE-2014-3566 [Daniel Miller]
-
 o [NSE] vulns.Report:make_output() now generates XML structured output
   reports automatically. [Paulino Calderon]
-
-o [NSE] Added http-avaya-ipoffice-users script to enumerate users in Avaya
-  IP Office 7.x systems. [Paulino Calderon]
-
-o [NSE] Added docker-version script for detecting Docker [Claudio Criscione]
-
-o [NSE] Improved http-form-brute autodetection and behavior to handle more
-  unusual-but-valid HTML syntax, non-POST forms, success/failure testing on
-  HTTP headers, and more. [nnposter]
 
 o [NSE] Add port.reason_ttl, host.reason, host.reason_ttl for use in scripts
   [Jay Bosamiya]
@@ -118,11 +367,6 @@ o Improve OS detection; If a port is detected to be 'tcpwrapped', then it will
 o [Zenmap] Reduce noise generated in Topology View due to anonymous
   hops [Jay Bosamiya]
 
-o --reason is enabled for verbosity > 2
-
-o When --reason is asked for, show TTL information too in default output
-  mode [Jay Bosamiya]
-
 o Added option --exclude-ports to Nmap so that some ports can be excluded from
   scanning (for example, due to policy) [Jay Bosamiya]
 
@@ -131,18 +375,6 @@ o [Zenmap] Catch the MemoryError caused in Zenmap due to large Nmap Output,
 
 o Catch badly named output files (such as those unintentionally caused by
   "-oX -sV logfile.xml") [Jay Bosamiya]
-
-o [NSE] Added the script supermicro-ipmi-conf to exploit Supermicro IPMI/BMC
-  controllers. [Paulino Calderon]
-
-o [NSE] Added mikrotik-routeros-brute script to perform password auditing
-  attacks against Mikrotik's RouterOS API. [Paulino Calderon]
-
-o [NSE] Add s7-info script to get device information from Siemens PLCs via the
-  S7 service, tunnelled over ISO-TSAP on TCP port 102. [Stephen Hilt]
-
-o Added options --data <hex string> and --data-string <string> to send custom
-  payloads in scan packet data. [Jay Bosamiya]
 
 o [Zenmap] Improved NmapParser to increase speed in opening scans. Large scans
   now open in seconds instead of hours. [Jay Bosamiya]
@@ -155,17 +387,6 @@ o Updated the bundled libpcap from 1.2.1 to 1.5.3 [Jay Bosamiya]
 
 o Correct the Target MAC Address in Nmap's ARP discovery to conform to what IP
   stacks in currently popular operating systems use. [Jay Bosamiya]
-
-o [NSE] Add bacnet-info script to get device information from SCADA/ICS devices
-  via BACnet (Building Automation and Control Networks) [Stephen Hilt, Michael
-  Toecker]
-
-o [NSE] Add Cisco Anyconnect library and scripts http-cisco-anyconnect,
-  http-vuln-cve2014-2126, http-vuln-cve2014-2127, http-vuln-cve2014-2128 and
-  http-vuln-cve2014-2129. [Patrik Karlsson]
-
-o [NSE] Add enip-info script to get device information from SCADA/ICS devices
-  via EtherNet/IP [Stephen Hilt]
 
 o Fixed a bug which caused Nmap to be unable to have any runtime interaction
   when called from sudo or from a shell script. [Jay Bosamiya]
@@ -258,11 +479,110 @@ o [NSE] Improved performance of citrixlua library when handling large XML
 
 Nmap 6.45 [2014-04-11]
 
-o NOTE THAT THE CHANGELOG FOR THIS RELEASE IS INCOMPLETE.  We plan to
-  finish it soon.
+o Idle scan now supports IPv6. IPv6 packets don't usually come with
+  fragments identifiers like IPv4 packets do, so new techniques had to
+  be developed to make idle scan possible. The implementation is by
+  Mathias Morbitzer, who made it the subject of his master's thesis.
 
-o [NSE] Add ssl-heartbleed script to detect the Heartbleed bug in OpenSSL
-  CVE-2014-0160 [Patrik Karlsson]
+o When doing a ping scan (-sn), the --open option will prevent down hosts from
+  being shown when -v is specified. This aligns with similar output for other
+  scan types. [Daniel Miller]
+
+o Fixed some syntax problems in nmap-os-db that were caused by some automated
+  merging of fingerprints (http://seclists.org/nmap-dev/2013/q4/68) [Daniel
+  Miller]
+
+o New service probes and fingerprints for Quake1, TeamSpeak3, xmlsysd,
+  Freelancer game server, All-Seeing Eye, AndroMouse, and AirHD.
+
+o Update included WinPcap to version 4.1.3 [Rob Nicholls]
+
+o [NSE] Convert many more scripts to emit structured XML output
+  (https://nmap.org/book/nse-api.html#nse-structured-output) [Daniel Miller]
+
+o [NSE] Added 24 NSE scripts from 12 authors, bringing the total up to 470.
+  They are all listed at http://nmap.org/nsedoc/, and the summaries are
+  below (authors are listed in brackets):
+
+  + allseeingeye-info gathers information from games using this query protocol.
+    A version detection probe was also added. [Marin Maržić]
+
+  + freelancer-info gathers information about the Freelancer game server. Also
+    added a related version detection probe and UDP protocol payload for
+    detecting the service. [Marin Maržić]
+
+  + http-csrf detects Cross Site Request Forgeries (CSRF) vulnerabilities by
+    searching for CSRF tokens in HTML forms. [George Chatzisofroniou]
+
+  + http-devframework finds out the technology behind the target website based
+    on HTTP headers, static URLs, and other content and resources. [George
+    Chatzisofroniou]
+
+  + http-dlink-backdoor detects DLink routers with firmware backdoor allowing
+    admin access over HTTP interface. [Patrik Karlsson]
+
+  + http-dombased-xss finds potential DOM-based Cross-site Scripting (XSS)
+    vulnerabilities by searching for specific patterns in JavaScript resources.
+    [George Chatzisofroniou]
+
+  + http-errors crawls for URIs that return error status codes (HTTP 400 and
+    above). [George Chatzisofroniou]
+
+  + http-feed crawls a web site for Atom and RSS feeds. [George Chatzisofroniou]
+
+  + http-iis-short-name-brute detects Microsoft IIS servers vulnerable to a
+    file/folder name disclosure and a denial of service vulnerability. The
+    script obtains the "shortnames" of the files and folders in the webroot
+    folder. [Paulino Calderon]
+
+  + http-mobileversion-checker checks for mobile versions of web pages by
+    setting an Android User-Agent header and checking for HTTP redirects.
+    [George Chatzisofroniou]
+
+  + http-ntlm-info gets server information from Web servers that require NTLM
+    authentication. [Justin Cacak]
+
+  + http-referer-checker finds JavaScript resources that are included from other
+    domains, increasing a website's attack surface. [George Chatzisofroniou]
+
+  + http-server-header grabs the Server header as a last-ditch effort to get a
+    software version. This can't be done as a softmatch because of the need to
+    match non-HTTP services that obey some HTTP requests. [Daniel Miller]
+
+  + http-useragent-tester checks for sites that redirect common Web spider
+    User-Agents to a different page than browsers get. [George Chatzisofroniou]
+
+  + http-vuln-cve2013-7091 (released as http-vuln-zimbra-lfi) looks for
+    CVE-2013-7091, a LFI vulnerability in Zimbra. [Paul AMAR, Ron Bowes]
+
+  + http-xssed searches the xssed.com database of Cross-site Scripting
+    vulnerabilities for previously-reported XSS vulnerabilities in the target.
+    [George Chatzisofroniou]
+
+  + qconn-exec tests the QNX QCONN service for remote command execution.
+    [Brendan Coles]
+
+  + quake1-info retrieves server and player information from Quake 1 game
+    servers. Reports potential DoS amplification factor.  [Ulrik Haugen]
+
+  + rfc868-time gets the date and time from an RFC 868 Time server. [Daniel
+    Miller]
+
+  + ssl-heartbleed detects the Heartbleed bug in OpenSSL CVE-2014-0160 [Patrik
+    Karlsson]
+
+  + sstp-discover discovers Microsoft's Secure Socket Tunnelling Protocol
+    (http://msdn.microsoft.com/en-us/library/cc247338.aspx) [Niklaus Schiess]
+
+  + unittest runs unit tests found in NSE libraries. The corresponding
+    unittest.lua library has examples. Run `nmap --script=unittest
+    --script-args=unittest.run -d` to run the tests. [Daniel Miller]
+
+  + weblogic-t3-info detects the T3 RMI protocol used by Oracle/BEA Weblogic
+    and extracts the Weblogic version. [Alessandro Zanni, Daniel Miller]
+
+  + whois-ip and whois-domain replace the whois script, which previously could
+    only collect whois info for IP addresses. [George Chatzisofroniou]
 
 o [NSE] Fixed an error-handling bug in socks-open-proxy that caused it to fail
   when scanning a SOCKS4-only proxy. Reported on IRC by Husky. [Daniel Miller]
@@ -270,24 +590,18 @@ o [NSE] Fixed an error-handling bug in socks-open-proxy that caused it to fail
 o [NSE] Improved ntp-info script to handle underscores in returned
   data. [nnposter]
 
-o [NSE] Add quake1-info script for retrieving server and player information
-  from Quake 1 game servers. Reports potential DoS amplification factor.
-  [Ulrik Haugen]
-
 o [NSE] Add unicode library for decoding and encoding UTF-8, UTF-16, CP437 and
   other character sets to Unicode code points. Scripts that previously just
   added or skipped nulls in UTF-16 data can use this to support non-ASCII
   characters. [Daniel Miller]
 
-o When doing a ping scan (-sn), the --open option will prevent down hosts from
-  being shown when -v is specified. This aligns with similar output for other
-  scan types. [Daniel Miller]
+o Significant code and documentation cleanup effort, fixing file encodings,
+  trailing whitespace, indentation, spelling mistakes, NSEdoc formatting
+  issues, PEP 8 compliance for Python, deprecation cleanup under python -3,
+  cleanup of warnings from LLVM's AddressSanitizer.  [Daniel Miller]
 
 o [Ncat] Added support for socks5 and corresponding regression tests.
   [Marek Lucaszuk, Petr Stodulka]
-
-o [NSE] Add http-ntlm-info script for getting server information from Web
-  servers that require NTLM authentication. [Justin Cacak]
 
 o Added TCP support to dns.lua. [John Bond]
 
@@ -299,13 +613,12 @@ o [NSE] Added tls library for functions related to SSLv3 and TLS messages.
   Existing ssl-enum-ciphers, ssl-date, and tls-nextprotoneg scripts were
   updated to use this library. [Daniel Miller]
 
-o [NSE] Add sstp-discover script to discover Microsoft's Secure Socket
-  Tunnelling Protocol (http://msdn.microsoft.com/en-us/library/cc247338.aspx)
-  [Niklaus Schiess]
+o Added NSE and Zenmap unit tests to "make check" [Daniel Miller]
 
-o [NSE] Added unittest library and NSE script for adding unit tests to NSE
-  libraries. See unittest.lua for examples, and run `nmap --script=unittest
-  --script-args=unittest.run -d` to run the tests. [Daniel Miller]
+o [NSE] Enable http-enum to use the large Nikto fingerprint database at runtime
+  if provided by the user. For licensing reasons, we do not distribute this
+  database, but the integration effort has the blessing of the Nikto folks.
+  [George Chatzisofroniou]
 
 o Updated bundled liblua from 5.2.2 to 5.2.3 (bugfix release) [Daniel Miller]
 
@@ -313,28 +626,8 @@ o Added version detection signatures and probes for a bunch of Android
   remote mouse/keyboard servers, including AndroMouse, AirHID,
   Wifi-mouse, and RemoteMouse. [Paul Hemberger]
 
-o [NSE] Added allseeingeye-info for gathering information from games
-  using this query protocol.  A version detection probe was also
-  added. [Marin Maržić]
-
-o [NSE] Add freelancer-info to gather information about the Freelancer
-  game server. Also added a related version detection probe and UDP
-  protocol payload for detecting the service. [Marin Maržić]
-
 o [Ncat] Fixed compilation when --without-liblua is specified in
   configure (an #include needed an ifdef guard). [Quentin Glidic]
-
-o [NSE] Add http-server-header script to grab the Server header as a last-ditch
-  effort to get a software version. This can't be done as a softmatch because
-  of the need to match non-HTTP services that obey some HTTP requests. [Daniel
-  Miller]
-
-o [NSE] Add rfc868-time script to get the date and time from an RFC 868 Time
-  server. [Daniel Miller]
-
-o [NSE] Add weblogic-t3-info script that detects the T3 RMI protocol used by
-  Oracle/BEA Weblogic. Extracts the Weblogic version, as well [Alessandro
-  Zanni, Daniel Miller]
 
 o Fixed a bug in libdnet with handling interfaces with AF_LINK addresses on
   FreeBSD >9 reported by idwer on IRC. Likely affected other *BSDs. Handled by
@@ -348,19 +641,6 @@ o Fixed a bug with UDP checksum calculation. When the UDP checksum is zero
 o [NSE] Removed a fixed value (28428) which was being set for the Request ID in
   the snmpWalk library function; a value based on nmap.clock_ms will now be set
   instead. [jah]
-
-o [NSE] Add http-iis-short-name-brute script that detects Microsoft IIS
-  servers vulnerable to a file/folder name disclosure and a denial of
-  service vulnerability. The script obtains the "shortnames" of the
-  files and folders in the webroot folder. [Paulino Calderon]
-
-o Idle scan now supports IPv6. IPv6 packets don't usually come with
-  fragments identifiers like IPv4 packets do, so new techniques had to
-  be developed to make idle scan possible. The implementation is by
-  Mathias Morbitzer, who made it the subject of his master's thesis.
-
-o [NSE] Add http-dlink-backdoor script that detects DLink routers with firmware
-  backdoor allowing admin access over HTTP interface. [Patrik Karlsson]
 
 o The ICMP ID of ICMP probes is now matched against the sent ICMP ID,
   to reduce the chance of false matches. Patch by Chris Johnson.
@@ -382,9 +662,6 @@ o [Nsock] Handle timers and timeouts via a priority queue (using a heap)
 o [NSE] Update dns-cache-snoop script to use a new list of top 50
   domains rather than a 2010 list. [Nicolle Neulist]
 
-o [NSE] Added the qconn-exec script by Brendan Coles, which tests the
-  QNX QCONN service for remote command execution.
-
 o [Zenmap] Fixed a crash that would happen when you entered a search
   term starting with a colon: "AttributeError:
   'FilteredNetworkInventory' object has no attribute 'match_'".
@@ -405,7 +682,7 @@ o Integrated all of your IPv4 OS fingerprint submissions since January
   (1,300 of them). Added 91 fingerprints, bringing the new total to 4,118.
   Additions include Linux 3.7, iOS 6.1, OpenBSD 5.3, AIX 7.1, and more.
   Many existing fingerprints were improved. Highlights:
-  http://seclists.org/nmap-dev/2013/q2/519. [David Fifield]
+  http://seclists.org/nmap-dev/2013/q2/518. [David Fifield]
 
 o Integrated all of your service/version detection fingerprints submitted
   since January (737 of them)! Our signature count jumped by 273 to 8,979.
@@ -489,7 +766,7 @@ o [NSE] Added 14 NSE scripts from 6 authors, bringing the total up to 446.
 o Updated the Nmap license agreement to close some loopholes and stop some
   abusers. It's particularly targeted at companies which distribute
   malware-laden Nmap installers as we caught Download.com doing last
-  year--http://insecure.org/news/download-com-fiasco.html. The updated
+  year--http://insecure.org/news/download-com-fiasco.html . The updated
   license is in the all the normal places, including
   https://svn.nmap.org/nmap/COPYING.
 
@@ -1273,7 +1550,7 @@ o Linux unreachable routes are now properly ignored. [David Fifield]
 o Added Dan Miller as an Nmap committer.  He has done a ton of great
   work on Nmap, as you can see by searching for him in this CHANGELOG
   or reading the Nmap committers list at
-  https://svn.nmap.org/nmap/docs/committers.txt.
+  https://svn.nmap.org/nmap/docs/committers.txt .
 
 o Added a new --disable-arp-ping option. This option prevents Nmap
   from implicitly using ARP or ND host discovery for discovering
@@ -2403,7 +2680,7 @@ o [NSE] Added 3 scripts, bringing the total to 246!  You can learn
 o Improved AIX support for raw scans. This includes some patches
   originally written by Peter O'Gorman and Florian Schmid. It also
   involved various build fixes found necessary on AIX 6.1 and 7.1. See
-  http://nmap.org/book/inst-other-platforms.html. [David]
+  http://nmap.org/book/inst-other-platforms.html . [David]
 
 o Fixed Nmap so that it again compiles and runs on Solaris 10,
   including IPv6 support. [David]
@@ -2412,7 +2689,7 @@ o [NSE] Moved our brute force authentication cracking scripts
   (*-brute) from the "auth" category into a new "brute"
   category. Nmap's brute force capabilities have grown tremendously!
   You can see all 32 of them at
-  http://nmap.org/nsedoc/categories/brute.html.  It isn't clear
+  http://nmap.org/nsedoc/categories/brute.html .  It isn't clear
   whether dns-brute should be in the brute category, so for now it
   isn't. [Fyodor]
 
@@ -2998,7 +3275,7 @@ o Nmap now determines the filesystem location it is being run from and
   (such as nmap-services).  This reduces the likelihood of needing to
   specify --datadir or getting data files from a different version of
   Nmap installed on the system.  For full details, see
-  http://nmap.org/book/data-files-replacing-data-files.html.  Thanks
+  http://nmap.org/book/data-files-replacing-data-files.html .  Thanks
   to Solar Designer for implementation advice. [David]
 
 o Created a page on our SecWiki for collecting Nmap script ideas! If
@@ -3258,7 +3535,7 @@ o [Nping] Added echo mode, a novel technique for discovering how your
   try it out against our public Nping echo server using this command:
     nping --echo-client "public" echo.nmap.org'
   Or learn more about echo mode at
-  http://nmap.org/book/nping-man-echo-mode.html. [Luis]
+  http://nmap.org/book/nping-man-echo-mode.html . [Luis]
 
 o [NSE] Added an amazing 46 scripts, bringing the total to 177! You
   can learn more about any of them at http://nmap.org/nsedoc/. Here
@@ -3326,7 +3603,7 @@ o [NSE] Added an amazing 46 scripts, bringing the total to 177! You
 
   hostmap: Tries to find hostnames that resolve to the target's IP
     address by querying the online database at
-    http://www.bfk.de/bfk_dnslogger.html. [Ange Gutek]
+    http://www.bfk.de/bfk_dnslogger.html . [Ange Gutek]
 
   http-brute: Performs brute force password auditing against http
     basic authentication. [Patrik Karlsson]
@@ -3517,7 +3794,7 @@ o Dramatically improved nmap.xsl (used for converting Nmap XML output
     default if Javascript is enabled).
   Many smaller improvements were made as well. You can find the new
   file at http://nmap.org/svn/docs/nmap.xsl, and here is an example
-  scan processed through it: http://nmap.org/tmp/newxsl.html. [Tom]
+  scan processed through it: http://nmap.org/tmp/newxsl.html . [Tom]
 
 o [NSE] Created a new "broadcast" script category for the broadcast-*
   scripts.  These perform network discovery by broadcasting on the
@@ -3592,11 +3869,11 @@ o [NSE] Added the ability to send and receive on unconnected sockets.
   unconnected UDP sockets. [David, Patrik]
 
 o [Nping] Substantially improved the Nping man page. You can read it
-  online at http://nmap.org/book/nping-man.html. [Luis, David]
+  online at http://nmap.org/book/nping-man.html . [Luis, David]
 
 o Documented the licenses of the third-party software used by Nmap and
   its sibling tools:
-  http://nmap.org/svn/docs/3rd-party-licenses.txt. [David]
+  http://nmap.org/svn/docs/3rd-party-licenses.txt . [David]
 
 o [NSE] Improved the SMB scripts so that they can run in parallel
   rather than using a mutex to force serialization.  This quadrupled
@@ -4284,16 +4561,16 @@ o [NSE] Added the new dns-service-discovery script which uses DNS-SD
   technologies known by names such as Bonjour, Rendezvous, and
   Zeroconf. This one script can provide as much information as a full
   port scan in some cases. See
-  http://nmap.org/nsedoc/scripts/dns-service-discovery.html. [Patrik
+  http://nmap.org/nsedoc/scripts/dns-service-discovery.html . [Patrik
   Karlsson]
 
 o [NSE] New script afp-brute for brute force authentication attempts
   against the Apple AFP filesharing protocol. See
-  http://nmap.org/nsedoc/scripts/afp-brute.html. [Patrik]
+  http://nmap.org/nsedoc/scripts/afp-brute.html . [Patrik]
 
 o [NSE] Added a new script afp-showmount which displays Apple AFP
   shares and their permissions.  See
-  http://nmap.org/nsedoc/scripts/afp-showmount.html. [Patrik]
+  http://nmap.org/nsedoc/scripts/afp-showmount.html . [Patrik]
 
 o [NSE] Added the qscan script to repeatedly probe ports on a host to
   gather round-trip times for each port. The script then uses these
@@ -4301,13 +4578,13 @@ o [NSE] Added the qscan script to repeatedly probe ports on a host to
   trip times.  Ports in different groups could be the result of things
   such as port forwarding to hosts behind a NAT. It is based on work
   by Doug Hoyte. This script also utilizes the new NSE raw IP sending
-  functionality. See http://nmap.org/nsedoc/scripts/qscan.html. [Kris]
+  functionality. See http://nmap.org/nsedoc/scripts/qscan.html . [Kris]
 
 o [NSE] Added a new script, db2-das-info.nse, that connects to the IBM
   DB2 Administration Server (DAS) exports the server profile. No
   authentication is required for this request. The script will also
   set the port product and version if a version scan is requested. See
-  http://nmap.org/nsedoc/scripts/db2-das-info.html. [Patrik Karlsson,
+  http://nmap.org/nsedoc/scripts/db2-das-info.html . [Patrik Karlsson,
   Tom Sellers]
 
 o [NSE] Added a new library for ASN.1 parsing and adapted the SNMP
@@ -4329,12 +4606,12 @@ o [NSE] Added a new library for ASN.1 parsing and adapted the SNMP
 
 o [NSE] Added the snmp-interfaces script by Thomas Buchanan, which
   enumerates network interfaces over SNMP. See
-  http://nmap.org/nsedoc/scripts/snmp-interfaces.html.
+  http://nmap.org/nsedoc/scripts/snmp-interfaces.html .
 
 o [NSE] Added http-vmware-path-vuln.nse, which checks for a critical
   and easy to exploit path-traversal vulnerability in VMWare
   (CVE-2009-3733). See
-  http://nmap.org/nsedoc/scripts/http-vmware-path-vuln.html. [Ron]
+  http://nmap.org/nsedoc/scripts/http-vmware-path-vuln.html . [Ron]
 
 o [NSE] Added a new library for LDAP and three new scripts by Patrik:
   - ldap-brute uses the unpwdb library to guess credentials for LDAP
@@ -4347,7 +4624,7 @@ o [NSE] Added a new library for LDAP and three new scripts by Patrik:
 
 o [NSE] Added a new library for PostgreSQL and the script pgsql-brute
   that uses it to guess credentials. See
-  http://nmap.org/nsedoc/scripts/pgsql-brute.html. [Patrik]
+  http://nmap.org/nsedoc/scripts/pgsql-brute.html . [Patrik]
 
 o [NSE] Added 5 new MySQL NSE scripts and a MySQL library by Patrik Karlsson:
   - mysql-brute uses the unpwdb library to guess credentials for MySQL
@@ -4391,11 +4668,11 @@ o [NSE] Added the ipidseq script to classify a host's IP ID sequence
   suitability for Nmap's Idle Scan (-sI), i.e. check if a host is an
   idle zombie.  This is the first script to use the new raw IP sending
   functionality in NSE. See
-  http://nmap.org/nsedoc/scripts/ipidseq.html. [Kris]
+  http://nmap.org/nsedoc/scripts/ipidseq.html . [Kris]
 
 o [NSE] Added the ssl-enum-ciphers script by Mak Kolybabi. It lists
   the ciphers and compressors supported by SSL/TLS servers. See
-  http://nmap.org/nsedoc/scripts/ssl-enum-ciphers.html.
+  http://nmap.org/nsedoc/scripts/ssl-enum-ciphers.html .
 
 o [NSE] Added two new scripts for the MongoDB database from Martin
   Holst Swende. mongodb-info
@@ -4414,20 +4691,20 @@ o [NSE] Added the scripts couchdb-databases and couchdb-stats, which
 
 o [NSE] Added the new lexmark-config script that lists product
   information and configuration for Lexmark printers. See
-  http://nmap.org/nsedoc/scripts/lexmark-config.html. [Patrik
+  http://nmap.org/nsedoc/scripts/lexmark-config.html . [Patrik
   Karlsson]
 
 o [NSE] Added the new daap-get-library script which uses the Digital
   Audio Access Protocol to enumerate the contents of a library. The
   contents contain the name of the artist, album and song. See
-  http://nmap.org/nsedoc/scripts/daap-get-library.html. [Patrik]
+  http://nmap.org/nsedoc/scripts/daap-get-library.html . [Patrik]
 
 o [NSE] Added jdwp-version.nse, a script by Michael Schierl that finds
   the version of a Java Debug Wire Protocol server. This is a
   dangerous service to find running as it does not provide any
   security against malicious attackers who can inject their own
   bytecode into the debugged process. See
-  http://nmap.org/nsedoc/scripts/jdwp-version.html.
+  http://nmap.org/nsedoc/scripts/jdwp-version.html .
 
 o [NSE] Added the smtp-enum-users script from Duarte Silva, which
   attempts to find user account names over SMTP by brute force testing
@@ -4441,7 +4718,7 @@ o [NSE] The unpwdb library now has a default time limit on the
     unpwdb.passlimit  Limit on number of passwords.
     unpwdb.timelimit  Time limit in seconds.
   Pass 0 for any of these limits to disable it. For more details, see
-  http://nmap.org/nsedoc/lib/unpwdb.html. [David]
+  http://nmap.org/nsedoc/lib/unpwdb.html . [David]
 
 o When --open is used, Nmap no longer prints output for hosts which
   don't have any open ports. All output formats are treated the same
@@ -4453,7 +4730,7 @@ o [NSE] Added the script http-methods from Bernd Stroessenreuther.
   supported by the server, highlights potentially risky methods, and
   optionally tests each method to see if they are restricted by IP
   address or something similar. See
-  http://nmap.org/nsedoc/scripts/http-methods.html.
+  http://nmap.org/nsedoc/scripts/http-methods.html .
 
 o The -v and -d options are now handled in the same way. These three
   forms are equivalent:
@@ -4799,7 +5076,7 @@ o Dramatically improved the version detection database, integrating
 o [NSE] Added a new script, oracle-sid-brute, which queries the Oracle
   TNS-listener for default instance/sid names. The SID enumeration
   list was prepared by Red Database security. See
-  http://nmap.org/nsedoc/scripts/oracle-sid-brute.html. [Patrik
+  http://nmap.org/nsedoc/scripts/oracle-sid-brute.html . [Patrik
   Karlsson]
 
 o [Ncat] The --ssl, --output, and --hex-dump options now work with
@@ -4907,30 +5184,30 @@ o Added 7 new NSE scripts for a grand total of 79! You can learn about
   them all at http://nmap.org/nsedoc/.  Here are the new ones:
 
   * nfs-showmount displays NFS exports like "showmount -e" does. See
-    http://nmap.org/nsedoc/scripts/nfs-showmount.html. [Patrik
+    http://nmap.org/nsedoc/scripts/nfs-showmount.html . [Patrik
     Karlsson]
 
   * ntp-info prints the time and configuration variables provided by
     an NTP service. It may get such interesting information as the
     operating system, server build date, and upstream time server IP
     address. See
-    http://nmap.org/nsedoc/scripts/ntp-info.html. [Richard Sammet]
+    http://nmap.org/nsedoc/scripts/ntp-info.html . [Richard Sammet]
 
   * citrix-brute-xml uses the unpwdb library to guess credentials for
     the Citrix PN Web Agent Service. See
-    http://nmap.org/nsedoc/scripts/citrix-brute-xml.html. [Patrik Karlsson]
+    http://nmap.org/nsedoc/scripts/citrix-brute-xml.html . [Patrik Karlsson]
 
   * citrix-enum-apps and citrix-enum-apps-xml print a list of published
     applications from the Citrix ICA Browser or XML service,
     respectively. See
     http://nmap.org/nsedoc/scripts/citrix-enum-apps.html and
-    http://nmap.org/nsedoc/scripts/citrix-enum-apps-xml.html. [Patrik Karlsson]
+    http://nmap.org/nsedoc/scripts/citrix-enum-apps-xml.html . [Patrik Karlsson]
 
   * citrix-enum-servers and citrix-enum-servers-xml.nse print a list
     of Citrix servers from the Citrix ICA Browser or XML service,
     respectively. See
     http://nmap.org/nsedoc/scripts/citrix-enum-servers.html and
-    http://nmap.org/nsedoc/scripts/citrix-enum-servers-xml.html. [Patrik
+    http://nmap.org/nsedoc/scripts/citrix-enum-servers-xml.html . [Patrik
     Karlsson]
 
 o We performed a memory consumption audit and made changes to
@@ -5045,20 +5322,20 @@ o Added 14 new NSE scripts for a grand total of 72! You can learn
     Optionally, multiple probes can be sent and the MAC address can be
     randomized in an attempt to exhaust the DHCP server's address pool
     and potentially create a denial of service condition. See
-    http://nmap.org/nsedoc/scripts/dhcp-discover.html. [Ron]
+    http://nmap.org/nsedoc/scripts/dhcp-discover.html . [Ron]
 
   o http-enum enumerates URLs used by popular web applications and
     servers and reports which ones exist on a target web server. See
-    http://nmap.org/nsedoc/scripts/http-enum.html. [Ron, Andrew Orr,
+    http://nmap.org/nsedoc/scripts/http-enum.html . [Ron, Andrew Orr,
     Rob Nicholls]
 
   o ssl-cert retrieves and prints a target server's SSL
     certificate. See
-    http://nmap.org/nsedoc/scripts/ssl-cert.html. [David]
+    http://nmap.org/nsedoc/scripts/ssl-cert.html . [David]
 
   o x11-access checks whether access to an X11 server is allowed (as
     with "xhost +" for example). See
-    http://nmap.org/nsedoc/scripts/x11-access.html. [jlanthea]
+    http://nmap.org/nsedoc/scripts/x11-access.html . [jlanthea]
 
   o db2-info enhances DB2 database instance detection. It provides
     detection when version probes fail, but will default to the
@@ -5066,40 +5343,40 @@ o Added 14 new NSE scripts for a grand total of 72! You can learn
     detects the server platform and database instance name. The DB2
     version detection port ranges were broadened to 50000-50025 and
     60000-60025 as well. See
-    http://nmap.org/nsedoc/scripts/db2-info.html. [Tom]
+    http://nmap.org/nsedoc/scripts/db2-info.html . [Tom]
 
   o smbv2-enabled checks if the smbv2 protocol is enabled on target
     servers. SMBv2 has already suffered from at least one major
     security vulnerability. See
-    http://nmap.org/nsedoc/scripts/smbv2-enabled.html. [Ron]
+    http://nmap.org/nsedoc/scripts/smbv2-enabled.html . [Ron]
 
   o http-favicon obtains the favicon file (/favicon.ico or whatever is
     specified by the HTML link tag) and tries to identify its source
     (such as a certain web application) using a database lookup. See
-    http://nmap.org/nsedoc/scripts/http-favicon.html. [Vladz]
+    http://nmap.org/nsedoc/scripts/http-favicon.html . [Vladz]
 
   o http-date obtains the Date: header field value from an HTTP server
     then displays it along with how much it differs from local
-    time. See http://nmap.org/nsedoc/scripts/http-date.html. [David]
+    time. See http://nmap.org/nsedoc/scripts/http-date.html . [David]
 
   o http-userdir-enum attempts to enumerate users on a system by
     trying URLs with common usernames in the Apache mod_userdir format
     (e.g. http://target-server.com/~john). See
-    http://nmap.org/nsedoc/scripts/http-userdir-enum.html. [Jah]
+    http://nmap.org/nsedoc/scripts/http-userdir-enum.html . [Jah]
 
   o pjl-ready-message allows viewing and setting the status message on
     printers which support the Printer Job Language (many HP printers
-    do). See http://nmap.org/nsedoc/scripts/pjl-ready-message.html.
+    do). See http://nmap.org/nsedoc/scripts/pjl-ready-message.html .
     [Aaron Leininger]
 
   o http-headers performs a GET request for the root folder ("/") of a
     web server and displays the HTTP headers returned. See
-    http://nmap.org/nsedoc/scripts/http-headers.html. [Ron]
+    http://nmap.org/nsedoc/scripts/http-headers.html . [Ron]
 
   o http-malware-host is designed to discover hosts that are serving
     malware (perhaps because they were compromised), but so far it
     only checks for one specific attack. See
-    http://nmap.org/nsedoc/scripts/http-malware-host.html. [Ron]
+    http://nmap.org/nsedoc/scripts/http-malware-host.html . [Ron]
 
   o smb-enum-groups displays a list of groups on the remote system
     along with their membership (like enum.exe -G). See
@@ -5124,7 +5401,7 @@ o [Zenmap] After performing or loading a scan, you can now filter
   This makes it easy to select just Linux hosts, or those running a
   certain version of Apache, or whatever interests you. You can easily
   modify the filter or remove it to see the whole scan again. See
-  http://nmap.org/book/zenmap-filter.html. [Josh Marlow]
+  http://nmap.org/book/zenmap-filter.html . [Josh Marlow]
 
 o For some UDP ports, Nmap will now send a protocol-specific payload
   that is more likely to get a response than an empty packet is. This
@@ -5281,7 +5558,7 @@ o [Ncat] Ncat now prints a message like "Connection refused." by
 o Zenmap no longer displays down hosts in the GUI. [Josh]
 
 o The Ndiff man page was dramatically improved with examples and
-  sample output. See http://nmap.org/ndiff/man.html.
+  sample output. See http://nmap.org/ndiff/man.html .
   [David]
 
 o [NSE] At debug level 2 or higher (-d2), Nmap now prints all active
@@ -5455,7 +5732,7 @@ o Added a check for a SMBv2 vulnerability (CVE-2009-3103) to
   smb-check-vulns. Due to its nature (it performs a DoS, then checks
   if the system is still online), the script isn't run by default and
   requires a special script-arg to work. See
-  http://nmap.org/nsedoc/scripts/smb-check-vulns.html. [Ron]
+  http://nmap.org/nsedoc/scripts/smb-check-vulns.html . [Ron]
 
 o Fixed an integer overflow in uptime calculation which could occur
   when a target with a low TCP timestamp clock frequency uses large
@@ -5493,7 +5770,7 @@ o There is a new OS detection pseudo-test, SCAN.DC, which records how
   and DS=1%DC=D (a true one-hop connection.) [David]
 
 o Canonicalized the list of OS detection device types to a smaller set
-  with descriptions: http://nmap.org/svn/docs/device-types.txt.
+  with descriptions: http://nmap.org/svn/docs/device-types.txt .
   [David, Fyodor, Doug]
 
 o [Ncat] The --idle-timeout option now exits when *both* stdin and the
@@ -5579,7 +5856,7 @@ o Zenmap's UI performance has improved significantly thanks to
   up the new host filter system. [Josh]
 
 o Add a service probe for DNS-based service discovery (DNS-SD). See
-  http://seclists.org/nmap-dev/2009/q3/0610.html. [David]
+  http://seclists.org/nmap-dev/2009/q3/0610.html . [David]
 
 o Made RPC grinding work from service detection again by changing the
   looked-for service name from "rpc" to "rpcbind", the name it has in
@@ -5608,7 +5885,7 @@ o Ncat proxy now hides the proxy's response ("HTTP/1.0 200 OK" or
 o [NSE] socket garbage collection was rewritten for better performance
   and to ensure that socket slots are immediately available to others
   after a socket is closed.  See
-  http://seclists.org/nmap-dev/2009/q2/0624.html. [Patrick]
+  http://seclists.org/nmap-dev/2009/q2/0624.html . [Patrick]
 
 o [NSE] Fixed a rare but possible segfault which could occur if the
   nsock binding attempted to push values on the stack of a thread
@@ -5640,7 +5917,7 @@ o [Nsock] Added a socket_count abstraction that counts the number of
   Ncat with SSL in connect mode, such that a client send would cause
   Ncat to use 100% CPU until it received something from the
   server. See the thread at
-  http://seclists.org/nmap-dev/2009/q2/0413.html. This change will
+  http://seclists.org/nmap-dev/2009/q2/0413.html . This change will
   also make it easier to use a different back end than select in the
   future. [David]
 
@@ -5696,7 +5973,7 @@ Nmap 4.90RC1 [2009-06-25]
 
 o [Zenmap] Fixed a display hanging problem on Mac OS X reported by
   Christopher Caldwell at
-  http://seclists.org/nmap-dev/2009/q2/0721.html.  This was done by
+  http://seclists.org/nmap-dev/2009/q2/0721.html .  This was done by
   adding gtk2 back to macports-1.8.0-universal.diff and removing the
   dependency on shared-mime-info so it doesn't expect /usr/share/mime
   files at runtime. Also included GDK pixbuf loaders statically rather
@@ -5740,7 +6017,7 @@ o Added SCTP port scanning support to Nmap. SCTP is a layer 4 protocol
   o 42 well-known SCTP ports were added to the nmap-services file.
   o The server scanme.csnc.ch has been set up for your SCTP scan
     testing pleasure. But note that SCTP doesn't pass through most
-    NAT devices. See http://seclists.org/nmap-dev/2009/q2/0669.html.
+    NAT devices. See http://seclists.org/nmap-dev/2009/q2/0669.html .
   Part of the work on SCTP support was kindly sponsored by
   Compass Security AG, Switzerland. [Daniel Roethlisberger]
 
@@ -5752,9 +6029,9 @@ o [NSE] Added http-iis-webdav-vuln.nse, which detects the recently
 
 o The Nmap Reference Guide has been translated to German by Open
   Source Press and Indonesian by Tedi Heriyanto. You can now read it
-  in 16 languages at http://nmap.org/docs.html. We're always looking
+  in 16 languages at http://nmap.org/docs.html . We're always looking
   for more translations of Nmap and its documentation--if you'd like
-  to help, see http://seclists.org/nmap-dev/2009/q2/0667.html.
+  to help, see http://seclists.org/nmap-dev/2009/q2/0667.html .
 
 o Open Source Press completed and released the German translation of
   the official Nmap book (Nmap Network Scanning). Learn more at
@@ -5762,7 +6039,7 @@ o Open Source Press completed and released the German translation of
 
 o [NSE] Added socks-open-proxy.nse for scanning networks for open
   SOCKS proxy servers. See
-  http://nmap.org/nsedoc/scripts/socks-open-proxy.html. [Joao Correa]
+  http://nmap.org/nsedoc/scripts/socks-open-proxy.html . [Joao Correa]
 
 o [NSE] http-open-proxy.nse has been updated to attempt HEAD and
   CONNECT methods as well as previously supported GET method.  It
@@ -5811,12 +6088,12 @@ o Changed the default UDP ping (-PU) port from 31338 to 40125.  This
 o [NSE] Added the imap-capabilities script, which uses the CAPABILITY
   command to determine the capabilities of a target IMAP mail server.
   A simple supporting IMAP library was added as well. See
-  http://nmap.org/nsedoc/scripts/imap-capabilities.html. [Brandon]
+  http://nmap.org/nsedoc/scripts/imap-capabilities.html . [Brandon]
 
 o [NSE] Brandon Enright from UCSD reports that, thanks to all the NSE
   fixes in this release, he no longer sees any Nmap crashes in his
   large scale scans. See
-  http://seclists.org/nmap-dev/2009/q2/0639.html.
+  http://seclists.org/nmap-dev/2009/q2/0639.html .
 
 o Zenmap now works on RHEL/CentOS since it no longer requires the
   hashlib library (which was introduced in Python 2.5, but RHEL 5
@@ -5874,7 +6151,7 @@ o [Zenmap] Added the -PS22,25,80 option found in the Quick Traceroute
 
 o Fixed a bug with the --defeat-rst-ratelimit option which prevented
   it from working properly.  See this thread:
-  http://seclists.org/nmap-dev/2009/q2/0476.html. [Josh]
+  http://seclists.org/nmap-dev/2009/q2/0476.html . [Josh]
 
 o [Ndiff] Avoid printing a "Not shown:" line if there weren't any
   ports in the non-shown (extraports) list. [David]
@@ -5897,12 +6174,12 @@ o [NSE] Fixed the parsing of --script-args, which was only accepting
   characters within the quotation marks. You may also use the quote
   delimiter inside the sequence so long as it is escaped by a
   backslash. See
-  http://seclists.org/nmap-dev/2009/q2/0211.html. [Patrick]
+  http://seclists.org/nmap-dev/2009/q2/0211.html . [Patrick]
 
 o [NSE] When a script ends for any reason, all of its mutexes are now
   unlocked.  This prevents a permanent (and painful to debug) deadlock
   when a script crashes without unlocking a mutex. See
-  http://seclists.org/nmap-dev/2009/q2/0533.html. [Patrick]
+  http://seclists.org/nmap-dev/2009/q2/0533.html . [Patrick]
 
 o Fixed a bug wherein nmap would not display the post-scan count of
   raw packets sent during a SYN ping scan (-sP -PS). [Josh Marlow]
@@ -5925,7 +6202,7 @@ o [Ncat] The Nmap Windows uninstaller now removes the Ncat CA list
 
 o Optimized some Nmap version detection match lines for slightly
   better performance. See
-  http://seclists.org/nmap-dev/2009/q2/0328.html. [Brandon]
+  http://seclists.org/nmap-dev/2009/q2/0328.html . [Brandon]
 
 o [NSE] Upon connection failure, a socket now immediately unlocks its
   "socket lock" to allow other pending socket connections to succeed
@@ -5953,7 +6230,7 @@ o Fixed a bug where an ICMP echo, timestamp, or address mask reply
 
 o Improved the host expression parser to better handle a few cases
   where invalid target specifiers would case Nmap to scan unintended
-  hosts. See http://seclists.org/nmap-dev/2009/q2/0319.html. [Jah]
+  hosts. See http://seclists.org/nmap-dev/2009/q2/0319.html . [Jah]
 
 o [Zenmap] Fixed a crash, introduced in 4.85BETA4, that happened when
   searching scan results by date. [David]
@@ -6045,7 +6322,7 @@ o Integrated all of your 1,156 of your OS detection submissions and
   fingerprints!  That is more than we ever had with the first system.
   The 243 new fingerprints include Microsoft Windows 7 beta, Linux
   2.6.28, and much more.  See
-  http://seclists.org/nmap-dev/2009/q2/0335.html. [David]
+  http://seclists.org/nmap-dev/2009/q2/0335.html . [David]
 
 o [Ncat] A whole lot of work was done by David to improve SSL
   security and functionality:
@@ -6229,7 +6506,7 @@ o New Conficker versions eliminate the loophole we were using to
 o [NSE] The Nmap Script Engine core (C++) was rewritten in Lua for
   code simplicity and extensibility. See
   http://seclists.org/nmap-dev/2009/q2/0090.html and
-  http://seclists.org/nmap-dev/2009/q1/0047.html. [Patrick]
+  http://seclists.org/nmap-dev/2009/q1/0047.html . [Patrick]
 
 o [Zenmap] The "Cancel" button has been restored to the main screen.
   It will cancel the scan that is currently being displayed. [David]
@@ -6324,7 +6601,7 @@ o The NSEDoc portal at http://nmap.org/nsedoc/ now provides download
   links from the script and module pages to browse or download recent versions
   of the code.  It isn't quite as up-to-date as obtaining them from
   svn directly, but may be more convenient. For an example, see
-  http://nmap.org/nsedoc/scripts/smb-check-vulns.html. [David, Fyodor]
+  http://nmap.org/nsedoc/scripts/smb-check-vulns.html . [David, Fyodor]
 
 o A copy of the Nmap public svn repository (/nmap, plus its zenmap,
   nsock, nbase, and ncat externals) is now available at
@@ -6562,7 +6839,7 @@ o You can now use '-' by itself in a target IP specification to mean
 o Nmap was discovered in another movie!  In the Russian film
   Khottabych, teenage hacker Gena uses Nmap (and telnet) to hack
   Microsoft.  In response, MS sends a pretty female hacker to flush
-  him out.  More details and screenshots: http://nmap.org/movies.html.
+  him out.  More details and screenshots: http://nmap.org/movies.html .
 
 o Improved operating system support for the smb-enum-sessions NSE
   script; previous revisions worked on Windows 2003 or Windows 2000,
@@ -6624,7 +6901,7 @@ o Implemented extended security negotiations in the NSE SMB
 
 o Nmap wins LinuxQuestions.Org Network Security Application of the
   Year for the sixth year in a row! See
-  http://seclists.org/nmap-dev/2009/q1/0395.html.
+  http://seclists.org/nmap-dev/2009/q1/0395.html .
 
 o [Zenmap] Removed some unnecessary (mostly GTK+-related) files from
   the Windows installer--nmap-4.85BETA4-setup.exe is now smaller than
@@ -6701,7 +6978,7 @@ o [Zenmap] Fix auto-scroll behavior while Nmap is producing output, as
 o [Zenmap] The network topology feature (Radialnet) has been
   internationalized so its strings will be localized as well (as soon
   as the relevant language's translation files are updated.  To help
-  out, see http://nmap.org/book/zenmap-lang.html. Some remaining search
+  out, see http://nmap.org/book/zenmap-lang.html . Some remaining search
   interface elements were internationalized as well. [David]
 
 o Improved the efficiency of the xml_convert() routine which handles
@@ -6730,7 +7007,7 @@ o Removed a bunch of unnecessary files (mostly GTK related) from the
 o Fixed an NSE crash (assertion error) which looked like
   "nsock_core.c:293: handle_connect_result: Assertion `0'
   failed". Brandon reported the bug, which was fixed by Doug and
-  David.  See http://seclists.org/nmap-dev/2009/q1/0546.html.
+  David.  See http://seclists.org/nmap-dev/2009/q1/0546.html .
 
 Nmap 4.85BETA3 [2009-2-2]
 
@@ -6775,7 +7052,7 @@ o Updated IANA assignment IP list for random IP (-iR)
 Nmap 4.85BETA2 [2009-1-29]
 
 o Added some duplicate GTK DLLs to Windows installer, as a temporary
-  fix for this issue: http://seclists.org/nmap-dev/2009/q1/0207.html.
+  fix for this issue: http://seclists.org/nmap-dev/2009/q1/0207.html
   The problem caused a warning message complaining of problems finding
   librsvg-2-2.dll to pop up 32 times before Zenmap would start.  We're
   still looking for a better fix. [Fyodor, Rob, Jah]
@@ -6830,7 +7107,7 @@ o Released Nmap Network Scanning: The Official Nmap Project Guide to
 
 o David spent more than a month working on algorithms to improve port
   scan performance while retaining or improving accuracy.  The changes
-  are described at http://seclists.org/nmap-dev/2009/q1/0054.html. He
+  are described at http://seclists.org/nmap-dev/2009/q1/0054.html . He
   was able to reduce our "benchmark scan time" (which involves many
   different scan types from many source networks to many targets) from
   1879 seconds to 1321 without harming accuracy.  That is a 30% time
@@ -6840,7 +7117,7 @@ o Introduced the NSE documentation portal, which documents every NSE
   script and library included with Nmap. See http://nmap.org/nsedoc/.
   Script documentation was improved substantially in the process.
   Scripts and libraries must use the new NSEDoc format, which is
-  described at http://nmap.org/book/nsedoc.html.  Thanks to Patrick
+  described at http://nmap.org/book/nsedoc.html .  Thanks to Patrick
   and David for their great work on this.
 
 o The 2nd Generation OS Detection System was dramatically improved for
@@ -6908,7 +7185,7 @@ o Zenmap now runs ndiff to for its "Compare Results" function. This
 
 o Added a Russian translation of the Nmap Reference Guide by Guz
   Alexander. We now have translations in 15 languages available from
-  http://nmap.org/docs.html. More volunteer translators are welcome,
+  http://nmap.org/docs.html . More volunteer translators are welcome,
   as we are still missing some important languages. Translation
   instructions are available from that docs.html page.
 
@@ -6946,7 +7223,7 @@ o [Zenmap] Internationalization has been fixed [David]. Currently
     o Brazilian Portuguese by Adriano Monteiro Marques (partial)
   For details on using an existing translation or localizing Zenmap
   into your own native language, see
-  http://nmap.org/book/zenmap-lang.html. [David]
+  http://nmap.org/book/zenmap-lang.html . [David]
 
 o Zenmap no longer outputs XML elements and attributes that are not in
   the Nmap XML DTD. This was done mostly by removing things from
@@ -7011,7 +7288,7 @@ o [NSE] We now have a canonical way for scripts to check for
   dependency libraries such as OpenSSL.  This allows them to handle
   the issue gracefully (by exiting or doing some of their work if
   possible) rather than flooding the console with error messages as
-  before. See http://nmap.org/nsedoc/modules/openssl.html. [Pattrick,
+  before. See http://nmap.org/nsedoc/modules/openssl.html . [Pattrick,
   David, Fyodor]
 
 o Nmap now reports a proper error message when you combine an IPv6
@@ -7020,7 +7297,7 @@ o Nmap now reports a proper error message when you combine an IPv6
 o Nmap now builds with the _FORTIFY_SOURCE=2 define.  With modern
   versions of GCC, this adds extra buffer overflow protection and
   other security checks.  It is described at
-  http://gcc.gnu.org/ml/gcc-patches/2004-09/msg02055.html. [David,
+  http://gcc.gnu.org/ml/gcc-patches/2004-09/msg02055.html . [David,
   Doug]
 
 o The --excludefile option correctly handles files with no terminating
@@ -7176,7 +7453,7 @@ o Enhanced the ssh service detection signatures to properly
 o Nsock now uses fselect() to work around problems with select() not
   working properly on non-socket descriptors on Windows.  This was
   needed for Ncat to work properly on that platform. See
-  http://seclists.org/nmap-dev/2008/q3/0766.html. [Kris]
+  http://seclists.org/nmap-dev/2008/q3/0766.html . [Kris]
 
 o Removed trailing null bytes from Ncat's responses in HTTP proxy
   mode. [David]
@@ -7369,7 +7646,7 @@ o [Zenmap] Added a new Scan Topology system. The idea is that if we
   into Zenmap. Joao Medeiros has been developing RadialNet for more
   than a year. For details, complete with some of the most beautiful
   Zenmap screen shots ever, visit
-  http://nmap.org/book/zenmap-topology.html. The integration work was
+  http://nmap.org/book/zenmap-topology.html . The integration work was
   done by SoC student Vladimir Mitrovic and his mentor David Fifield.
 
 o [Zenmap] Another exciting new Zenmap feature is Scan Aggregation.
@@ -7591,7 +7868,7 @@ o Completion time estimates provided in verbose mode or when you hit a
 
 o Fixed a number of NSE scripts which used print_debug()
   incorrectly. See
-  http://seclists.org/nmap-dev/2008/q3/0470.html. [Sven Klemm]
+  http://seclists.org/nmap-dev/2008/q3/0470.html . [Sven Klemm]
 
 o [Zenmap] The Ports/Hosts view now provides full version detection
   values rather than just a simple summary. [Jurand Nogiec]
@@ -7701,7 +7978,7 @@ o Improved performance of IP protocol scan by fixing a bug related to
 
 o Nmap --reason output no longer falsely reports a localhost-response
   during -PN scans. See
-  http://seclists.org/nmap-dev/2008/q3/0188.html. [Michael]
+  http://seclists.org/nmap-dev/2008/q3/0188.html . [Michael]
 
 o [Zenmap] The higwidgets Python package has moved so it is now a
   subpackage of zenmapGUI. This avoids naming conflicts with Umit,
@@ -7784,7 +8061,7 @@ o Zenmap no longer leaves any temporary files lying around. [David]
 
 o Nmap only prints an uptime guess in verbose mode now, because in
   some situations it can be very inaccurate. See the discussion at
-  http://seclists.org/nmap-dev/2008/q3/0392.html. [David]
+  http://seclists.org/nmap-dev/2008/q3/0392.html . [David]
 
 Nmap 4.68 [2008-6-28]
 
@@ -8198,7 +8475,7 @@ o Create /nmap/macosx directory in SVN with files necessary to build
   aren't quite yet distributing the results on the Nmap download page,
   but testing our beta versions is useful.  You can find the latest
   universal (PPC and Intel) binary test version by looking at David
-  Fifield's posts at http://seclists.org/nmap-dev/2008/q2/author.html.
+  Fifield's posts at http://seclists.org/nmap-dev/2008/q2/author.html .
   You can also read /nmap/macosx/README in svn for more info.
 
 o Nmap 2008 Summer of Code students have began working (though full
@@ -8345,7 +8622,7 @@ o Canonicalize NSE script license text--more than half did not even
   spell license correctly. They all still say that they are under
   Nmap's license, just with consistent capitalization and spelling,
   and now a link to Nmap legal page at
-  http://nmap.org/man/man-legal.html.
+  http://nmap.org/man/man-legal.html .
 
 o Updated ripeQuery.nse to not print extraneous whitespace. [Kris]
 
@@ -8719,7 +8996,7 @@ o Canonicalized the interface type numbers used internally by
   libdnet. Also Libdnet now recognizes devices with type
   INTF_TYPE_IEEE80211 as Ethernet devices.  This ought to make
   wireless network scanning work on Windows Vista. For more background
-  see http://seclists.org/nmap-dev/2007/q4/0391.html. [David]
+  see http://seclists.org/nmap-dev/2007/q4/0391.html . [David]
 
 o Documented the "--script all" option in the man page and NSE
   article.  This option executes all scripts in the NSE database
@@ -9129,7 +9406,7 @@ o Fixed (I hope) a problem with running Nmap on Mac OS X machines with
   "getinterfaces: Failed to open ethernet interface (vmnet8). A
   possible cause on BSD operating systems is running out of BPF
   devices ...."  For more details, see
-  http://seclists.org/nmap-dev/2007/q3/0254.html.
+  http://seclists.org/nmap-dev/2007/q3/0254.html .
 
 o Check that --script arguments are reasonable when Nmap starts rather
   than potentially waiting for a bunch of port scanning to finish

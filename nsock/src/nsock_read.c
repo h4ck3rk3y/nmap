@@ -4,7 +4,7 @@
  *                                                                         *
  ***********************IMPORTANT NSOCK LICENSE TERMS***********************
  *                                                                         *
- * The nsock parallel socket event library is (C) 1999-2013 Insecure.Com   *
+ * The nsock parallel socket event library is (C) 1999-2015 Insecure.Com   *
  * LLC This library is free software; you may redistribute and/or          *
  * modify it under the terms of the GNU General Public License as          *
  * published by the Free Software Foundation; Version 2.  This guarantees  *
@@ -75,13 +75,13 @@ nsock_event_id nsock_readlines(nsock_pool nsp, nsock_iod ms_iod,
   nse = event_new(ms, NSE_TYPE_READ, nsi, timeout_msecs, handler, userdata);
   assert(nse);
 
-  nsock_log_info(ms, "Read request for %d lines from IOD #%li [%s] EID %li",
+  nsock_log_info("Read request for %d lines from IOD #%li [%s] EID %li",
                  nlines, nsi->id, get_peeraddr_string(nsi), nse->id);
 
   nse->readinfo.read_type = NSOCK_READLINES;
   nse->readinfo.num = nlines;
 
-  nsp_add_event(ms, nse);
+  nsock_pool_add_event(ms, nse);
 
   return nse->id;
 }
@@ -98,13 +98,13 @@ nsock_event_id nsock_readbytes(nsock_pool nsp, nsock_iod ms_iod,
   nse = event_new(ms, NSE_TYPE_READ, nsi, timeout_msecs, handler, userdata);
   assert(nse);
 
-  nsock_log_info(ms, "Read request for %d bytes from IOD #%li [%s] EID %li",
+  nsock_log_info("Read request for %d bytes from IOD #%li [%s] EID %li",
                  nbytes, nsi->id, get_peeraddr_string(nsi), nse->id);
 
   nse->readinfo.read_type = NSOCK_READBYTES;
   nse->readinfo.num = nbytes;
 
-  nsp_add_event(ms, nse);
+  nsock_pool_add_event(ms, nse);
 
   return nse->id;
 }
@@ -122,12 +122,12 @@ nsock_event_id nsock_read(nsock_pool nsp, nsock_iod ms_iod,
   nse = event_new(ms, NSE_TYPE_READ, nsi, timeout_msecs, handler, userdata);
   assert(nse);
 
-  nsock_log_info(ms, "Read request from IOD #%li [%s] (timeout: %dms) EID %li",
+  nsock_log_info("Read request from IOD #%li [%s] (timeout: %dms) EID %li",
                  nsi->id, get_peeraddr_string(nsi), timeout_msecs, nse->id);
 
   nse->readinfo.read_type = NSOCK_READ;
 
-  nsp_add_event(ms, nse);
+  nsock_pool_add_event(ms, nse);
 
   return nse->id;
 }

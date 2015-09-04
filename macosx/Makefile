@@ -71,10 +71,13 @@ $(IMAGE_NAME): $(IMAGE_STAGING_DIR)/$(PKG_NAME)
 	rm -f $@
 	hdiutil create -imagekey zlib-level=9 -srcfolder $(IMAGE_STAGING_DIR) $@
 
-$(IMAGE_STAGING_DIR)/$(PKG_NAME): stage-nmap stage-ncat stage-ndiff stage-zenmap stage-nping stage-nmap-update COPYING.formatted
+$(IMAGE_STAGING_DIR)/$(PKG_NAME): check-nmap check-ncat check-ndiff check-zenmap check-nping check-nmap-update COPYING.formatted
 	mkdir -p $(IMAGE_STAGING_DIR)
 	cp -rf $(EXTRA_DIST) $(IMAGE_STAGING_DIR)/
 	$(PACKAGEMAKER) --doc nmap.pmdoc --title "Nmap $(NMAP_VERSION)" --no-relocate -o $@
+
+check-%: stage-%
+	find $* -perm -a+x -type f | xargs otool -L | grep "$(MACPORTS_PREFIX)" && false || echo "Libs are clean"
 
 export-%:
 	rm -rf $*
@@ -89,7 +92,7 @@ stage-nmap: export-$(NMAP_BUILD_DIR)
 
 stage-ncat: export-$(NCAT_BUILD_DIR)
 	cd $(NCAT_BUILD_DIR) && ./configure --without-zenmap --with-ncat --without-ndiff --without-nping --without-nmap-update --with-openssl="$(MACPORTS_PREFIX)" $(CONFIGURE_ARGS)
-	make -d -C $(NCAT_BUILD_DIR) ncat_build OPENSSL_LIBS="$(OPENSSL_STATIC)"
+	make -d -C $(NCAT_BUILD_DIR) build-ncat OPENSSL_LIBS="$(OPENSSL_STATIC)"
 	rm -rf $(NCAT_STAGING_DIR)
 	make -d -C $(NCAT_BUILD_DIR) install-ncat DESTDIR="`pwd`/$(NCAT_STAGING_DIR)"
 

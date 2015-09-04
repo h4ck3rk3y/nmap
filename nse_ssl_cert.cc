@@ -4,7 +4,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -305,8 +305,8 @@ static int time_to_tm(const ASN1_TIME *t, struct tm *result)
     else
       result->tm_year = 1900 + year;
     p = t->data + 2;
-  } else if (t->length == 14) {
-    /* yyyymmddhhmmss */
+  } else if (t->length == 15 && t->data[t->length - 1] == 'Z') {
+    /* yyyymmddhhmmssZ */
     result->tm_year = parse_int(t->data, 4);
     if (result->tm_year < 0)
       return -1;

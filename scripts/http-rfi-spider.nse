@@ -1,5 +1,7 @@
 description = [[
-Crawls webservers in search of RFI (remote file inclusion) vulnerabilities. It tests every form field it finds and every parameter of a URL containing a query.
+Crawls webservers in search of RFI (remote file inclusion) vulnerabilities. It
+tests every form field it finds and every parameter of a URL containing a
+query.
 ]]
 
 ---
@@ -169,7 +171,7 @@ function action(host, port)
 
     if ( not(status) ) then
       if ( r.err ) then
-        return stdnse.format_output(true, ("ERROR: %s"):format(r.reason))
+        return stdnse.format_output(false, r.reason)
       else
         break
       end

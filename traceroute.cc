@@ -3,7 +3,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -745,8 +745,8 @@ public:
     ack = 0;
     if ((pspec.pd.tcp.flags & TH_SYN) == TH_SYN) {
       /* MSS 1460 bytes. */
-      tcpopts = "\x02\x04\x05\xb4";
-      tcpoptslen = 4;
+      tcpopts = TCP_SYN_PROBE_OPTIONS;
+      tcpoptslen = TCP_SYN_PROBE_OPTIONS_LEN;
     } else if ((pspec.pd.tcp.flags & TH_ACK) == TH_ACK) {
       ack = get_random_u32();
     }

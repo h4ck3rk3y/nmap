@@ -9,7 +9,7 @@
  *                                                                         *
  ***********************IMPORTANT NMAP LICENSE TERMS************************
  *                                                                         *
- * The Nmap Security Scanner is (C) 1996-2014 Insecure.Com LLC. Nmap is    *
+ * The Nmap Security Scanner is (C) 1996-2015 Insecure.Com LLC. Nmap is    *
  * also a registered trademark of Insecure.Com LLC.  This program is free  *
  * software; you may redistribute and/or modify it under the terms of the  *
  * GNU General Public License as published by the Free Software            *
@@ -162,11 +162,14 @@
  "think Solaris can support advanced localhost scans.  You can probably "\
  "use \"-Pn -sT localhost\" though.\n\n"
 
-#include "portlist.h"
 #include "nmap.h"
-#include "global_structures.h"
+#ifndef NOLUA
+#include "nse_main.h"
+#endif
 #include <nsock.h>
+class PortList;
 
+#include <stdarg.h>
 #include <string>
 
 #ifdef WIN32
@@ -285,8 +288,8 @@ void printfinaloutput();
 void printdatafilepaths();
 
 /* nsock logging interface */
-void nmap_adjust_loglevel(nsock_pool nsp, bool trace);
-void nmap_nsock_stderr_logger(nsock_pool nsp, const struct nsock_log_rec *rec);
+void nmap_adjust_loglevel(bool trace);
+void nmap_nsock_stderr_logger(const struct nsock_log_rec *rec);
 
 #endif /* OUTPUT_H */
 
